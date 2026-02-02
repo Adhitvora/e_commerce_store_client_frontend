@@ -4,7 +4,7 @@ const mode = process.env.REACT_APP_MODE;
 let app_url, api_url;
 
 if (mode === 'production') {
-  app_url = 'https://e-commerce-store-client-frontend-hgjpax9ks-adhit-voras-projects.vercel.app';
+  app_url = 'https://e-commerce-store-client-frontend.vercel.app';
   api_url = 'https://e-commerce-store-backend-2rgq.onrender.com';
 } else {
   app_url = 'http://localhost:3000';
@@ -12,7 +12,7 @@ if (mode === 'production') {
 }
 
 export {
-    app_url,
-    api_url,
-    stripe_sky
+  app_url,
+  api_url,
+  stripe_sky
 }
