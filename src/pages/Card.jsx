@@ -266,7 +266,7 @@ const Card = () => {
                       <h2 className="text-xl font-bold">Order Summary</h2>
                       <div className="flex justify-between items-center">
                         <span>{buy_product_item} Item</span>
-                        <span>${price}</span>
+                        <span>₹{price}</span>
                       </div>
                       <div className="flex justify-between items-center">
                         <span>Shipping Fee</span>
@@ -285,7 +285,7 @@ const Card = () => {
                       <div className="flex justify-between items-center">
                         <span>Total</span>
                         <span className="text-lg text-orange-500">
-                          ${price + shipping_fee}
+                          ₹{price + shipping_fee}
                         </span>
                       </div>
                       <button

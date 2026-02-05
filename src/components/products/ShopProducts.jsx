@@ -66,7 +66,7 @@ const ShopProducts = ({ styles, products }) => {
                     <div className='flex justify-start items-start flex-col gap-1'>
                         <h2 className='text-md text-slate-700 font-medium'>{p.name?.slice(0,40)}...</h2>
                         <div className='flex justify-start items-center gap-2'>
-                            <span className='text-md  font-bold text-slate-700'>${p.price}</span>
+                            <span className='text-md  font-bold text-slate-700'>₹{p.price}</span>
                             <div className='flex text-lg'>
                                 <Ratings ratings={p.rating} />
                             </div>

@@ -239,9 +239,9 @@ const Details = () => {
               <div className="text-2xl text-red-500 font-bold flex gap-3">
                 {product.discount !== 0 ? (
                   <>
-                    <h2 className="line-through">${product.price}</h2>
+                    <h2 className="line-through">₹{product.price}</h2>
                     <h2 className="text-black">
-                      $
+                      ₹
                       {product.price -
                         Math.floor(
                           (product.price * product.discount) / 100,
@@ -250,7 +250,7 @@ const Details = () => {
                     <h2>(-{product.discount}%)</h2>
                   </>
                 ) : (
-                  <h2>Price : ${product.price}</h2>
+                  <h2>Price : ₹{product.price}</h2>
                 )}
               </div>
               {/* <div className='text-slate-600'>
@@ -419,7 +419,7 @@ const Details = () => {
                         </h2>
                         <div className="flex gap-2">
                           <h2 className="text-slate-600">Price: </h2>
-                          <span className=" text-lg font-bold">${p.price}</span>
+                          <span className=" text-lg font-bold">₹{p.price}</span>
                         </div>
                         <div className="flex gap-2">
                           <div className="flex items-center gap-2">
@@ -479,7 +479,7 @@ const Details = () => {
                         </h2>
                         <div className="flex justify-start items-center gap-3">
                           <h2 className="text-[#6699ff] text-lg font-bold">
-                            ${p.price}
+                            ₹{p.price}
                           </h2>
                           <div className="flex">
                             <Ratings ratings={p.rating} />

@@ -97,7 +97,7 @@ const Shops = () => {
       }),
     );
   };
-  console.log(priceRange);
+ // console.log(priceRange);
   return (
     <div>
       <Headers />

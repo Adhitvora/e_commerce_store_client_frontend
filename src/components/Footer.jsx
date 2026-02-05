@@ -23,9 +23,9 @@ const Footer = () => {
               alt="logo"
             />
             <ul className="flex flex-col gap-2 text-slate-700">
-              <li>Address : Rangpur , Kuigram</li>
-              <li>Phone : 5873458345</li>
-              <li>Email : farid@gmail.com</li>
+              <li>Address :myhaat</li>
+              <li>Phone : +916296151740</li>
+              <li>Email : myhaat24@gmail.com </li>
             </ul>
           </div>
         </div>
@@ -47,9 +47,7 @@ const Footer = () => {
                   <li>
                     <Link>Privacy Policy</Link>
                   </li>
-                  <li>
-                    <Link>Blogs</Link>
-                  </li>
+             
                 </ul>
                 <ul className="flex flex-col gap-2 text-slate-700 text-sm">
                   <li>
@@ -64,9 +62,7 @@ const Footer = () => {
                   <li>
                     <Link>Privacy Policy</Link>
                   </li>
-                  <li>
-                    <Link>Blogs</Link>
-                  </li>
+            
                 </ul>
               </div>
             </div>
@@ -129,7 +125,7 @@ const Footer = () => {
         <span>
           Copyright ©{new Date().getFullYear()} All rights reserved | made by{" "}
           <a className="text-blue-500 underline" href="">
-            @Learn with Project
+            @myhaat
           </a>
         </span>
       </div>

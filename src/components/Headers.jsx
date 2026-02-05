@@ -64,9 +64,9 @@ const Headers = () => {
                 <span>
                   <GrMail />
                 </span>
-                <span>flarexa@gmail.com</span>
+                <span>myhaat24@gmail.com</span>
               </li>
-              <span>Multi vendor ecommerce</span>
+              <span>my haat ecommerce</span>
             </ul>
             <div>
               <div className="flex justify-center items-center gap-10">
@@ -164,13 +164,7 @@ const Headers = () => {
                       Shop
                     </Link>
                   </li>
-                  <li>
-                    <Link
-                      className={`p-2 block ${pathname === "/blog" ? "text-[#7fad39]" : "text-slate-600"}`}
-                    >
-                      Blog
-                    </Link>
-                  </li>
+         
                   <li>
                     <Link
                       className={`p-2 block ${pathname === "/about" ? "text-[#7fad39]" : "text-slate-600"}`}
@@ -243,7 +237,6 @@ const Headers = () => {
                   <MdOutlineKeyboardArrowDown />
                 </span>
                 <ul className="absolute invisible transition-all to-12 rounded-sm duration-200 text-white p-2 w-[100px] flex flex-col gap-3 group-hover:visible group-hover:top-6 group-hover:bg-black z-10">
-                  <li>Bangla</li>
                   <li>English</li>
                 </ul>
               </div>
@@ -286,13 +279,7 @@ const Headers = () => {
                   Shop
                 </Link>
               </li>
-              <li>
-                <Link
-                  className={`py-2 block ${pathname === "/blog" ? "text-[#7fad39]" : "text-slate-600"}`}
-                >
-                  Blog
-                </Link>
-              </li>
+              
               <li>
                 <Link
                   className={`py-2 block ${pathname === "/about" ? "text-[#7fad39]" : "text-slate-600"}`}
@@ -330,9 +317,9 @@ const Headers = () => {
               </div>
               <div className="flex justify-end flex-col gap-1">
                 <h2 className="text-sm font-medium text-slate-700">
-                  +8803242343243
+                  +916296151740
                 </h2>
-                <span className="text-xs">support 33/45 time</span>
+                <span className="text-xs">support 24/7 time</span>
               </div>
             </div>
             <ul className="flex flex-col justify-start items-start gap-3 text-[#1c1c1c]">
@@ -340,7 +327,7 @@ const Headers = () => {
                 <span>
                   <GrMail />
                 </span>
-                <span>learnwithproject@gmail.com</span>
+                <span>myhaat24@gmail.com </span>
               </li>
               <span className="text-sm">Multi vendor ecommerce</span>
             </ul>
@@ -418,7 +405,7 @@ const Headers = () => {
                     type="text"
                     name=""
                     id=""
-                    placeholder="what do you need"
+                    placeholder="Search sarees, fabrics, designs & offers"
                   />
                   <button
                     onClick={search}
@@ -437,9 +424,9 @@ const Headers = () => {
                   </div>
                   <div className="flex justify-end flex-col gap-1">
                     <h2 className="text-md font-medium text-slate-700">
-                      +8803242343243
+                      +91 6296151740
                     </h2>
-                    <span className="text-sm">support 33/45 time</span>
+                    <span className="text-sm">support 24/7 time</span>
                   </div>
                 </div>
               </div>

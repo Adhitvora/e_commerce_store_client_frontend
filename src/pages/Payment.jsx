@@ -68,11 +68,11 @@ const Payment = () => {
                                     <h2>Order Summary</h2>
                                     <div className='flex justify-between items-center'>
                                         <span>{items} items and shipping fee included</span>
-                                        <span>${price}</span>
+                                        <span>₹{price}</span>
                                     </div>
                                     <div className='flex justify-between items-center font-semibold'>
                                         <span>Total Amount</span>
-                                        <span className='text-lg text-orange-500'>${price}</span>
+                                        <span className='text-lg text-orange-500'>₹{price}</span>
                                     </div>
                                 </div>
                             </div>

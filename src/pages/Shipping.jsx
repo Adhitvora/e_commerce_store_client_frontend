@@ -239,7 +239,7 @@ const Shipping = () => {
                         <div className="flex justify-end w-5/12 sm:w-full sm:mt-3">
                           <div className="pl-4 sm:pl-0">
                             <h2 className="text-lg text-orange-500">
-                              $
+                              ₹
                               {pt.productInfo.price -
                                 Math.floor(
                                   (pt.productInfo.price *
@@ -248,7 +248,7 @@ const Shipping = () => {
                                 )}
                             </h2>
                             <p className="line-through">
-                              ${pt.productInfo.price}
+                              ₹{pt.productInfo.price}
                             </p>
                             <p>-{pt.productInfo.discount}%</p>
                           </div>
@@ -265,19 +265,19 @@ const Shipping = () => {
                   <h2 className="text-xl font-semibold">Order Summary</h2>
                   <div className="flex justify-between items-center">
                     <span>Items Total({price})</span>
-                    <span>${price}</span>
+                    <span>₹{price}</span>
                   </div>
                   <div className="flex justify-between items-center">
                     <span>Delivery Fee</span>
-                    <span>${shipping_fee}</span>
+                    <span>₹{shipping_fee}</span>
                   </div>
                   <div className="flex justify-between items-center">
                     <span>Total Payment</span>
-                    <span>${price + shipping_fee}</span>
+                    <span>₹{price + shipping_fee}</span>
                   </div>
                   <div className="flex justify-between items-center">
                     <span>Total</span>
-                    <span>${price + shipping_fee}</span>
+                    <span>₹{price + shipping_fee}</span>
                   </div>
                   <button
                     onClick={placeOrder}
