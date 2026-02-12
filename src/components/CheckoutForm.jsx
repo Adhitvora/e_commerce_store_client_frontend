@@ -1,56 +1,77 @@
-import React from 'react'
-import { PaymentElement, LinkAuthenticationElement, useStripe, useElements } from '@stripe/react-stripe-js'
-import { useState } from 'react'
-import { app_url } from '../utils/config'
-const CheckoutForm = ({ orderId }) => {
+import React, { useState } from "react";
+import axios from "axios";
+import { api_url } from "../utils/config";
 
-    localStorage.setItem('orderId', orderId)
-    const stripe = useStripe()
-    const elements = useElements()
-    const [message, setMessage] = useState(null)
-    const [isLoading, setIsLoading] = useState(false)
+const RazorpayCheckout = ({ price, orderId }) => {
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState(null);
 
-    const paymentElementOptions = {
-        loyout: 'tabs'
+  const handlePayment = async () => {
+    try {
+      setLoading(true);
+      setError(null);
+
+      /* -------------------------------
+               1️⃣ Create Razorpay Order
+            -------------------------------- */
+
+      const { data } = await axios.post(
+        `${api_url}/api/order/create-payment`,
+        { price, orderId },
+        { withCredentials: true },
+      );
+
+      /* -------------------------------
+               2️⃣ Configure Razorpay Popup
+            -------------------------------- */
+
+      const options = {
+        key: process.env.REACT_APP_RAZORPAY_KEY,
+        amount: data.amount,
+        currency: "INR",
+        name: "My Shop",
+        description: "Order Payment",
+        order_id: data.id,
+
+        handler: function (response) {
+          // Payment success (verification via webhook)
+          window.location.href = `/order/success/${orderId}`;
+        },
+
+        prefill: {
+          name: "",
+          email: "",
+          contact: "",
+        },
+
+        theme: {
+          color: "#7fad39",
+        },
+      };
+
+      const rzp = new window.Razorpay(options);
+      rzp.open();
+    } catch (err) {
+      console.log(err);
+      setError("Payment initialization failed");
+    } finally {
+      setLoading(false);
     }
+  };
 
-    const submit = async (e) => {
-        e.preventDefault()
+  return (
+    <div className="py-8 px-4 bg-white rounded-md shadow-sm">
+      <button
+        onClick={handlePayment}
+        disabled={loading}
+        className="w-full px-6 py-2 bg-green-600 hover:bg-green-700 text-white rounded-md transition-all"
+      >
+        {loading ? "Processing..." : "Pay Now"}
+      </button>
 
-        if (!stripe || !elements) {
-            return
-        }
-        setIsLoading(true)
-        const { error } = await stripe.confirmPayment({
-            elements,
-            confirmParams: {
-                return_url: `${app_url}/order/confirm`
-            }
-        })
-        if (error.type === 'card_error' || error.type === 'validation_error') {
-            setMessage(error.message)
-        } else {
-            setMessage('An unexpected error occurred')
-        }
-        setIsLoading(false)
-    }
+      {error && <div className="mt-3 text-red-500 text-sm">{error}</div>}
+    </div>
+  );
+};
 
-    return (
-        <form onSubmit={submit} id='payment-form' >
-            <LinkAuthenticationElement
-                id='link-authentication-element'
-            />
-            <PaymentElement id='payment-element' options={paymentElementOptions} />
-            <button disabled={isLoading || !stripe || !elements} id='submit' className='px-10 py-[6px] rounded-sm hover:shadow-orange-500/20 hover:shadow-lg bg-orange-500 text-white'>
-                <span id='button-text'>
-                    {
-                        isLoading ? <div>Loading.....</div> : "Pay now"
-                    }
-                </span>
-            </button>
-            {message && <div>{message}</div>}
-        </form>
-    )
-}
-
-export default CheckoutForm
+export default RazorpayCheckout;

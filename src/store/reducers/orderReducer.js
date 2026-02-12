@@ -12,38 +12,36 @@ export const place_order = createAsyncThunk(
         shipping_fee,
         shippingInfo,
         userId,
-        navigate,
-        items
-    }, { getState }) => {
+        payment_type
+    }, { getState, rejectWithValue }) => {
+
         try {
+
             const token = getState().auth.token
+
             const config = {
                 headers: {
-                    'authorization': `Bearer ${token}`
+                    authorization: `Bearer ${token}`
                 }
             }
-            const {
-                data
-            } = await api.post('/home/order/palce-order', {
-                price,
-                products,
-                shipping_fee,
-                shippingInfo,
-                userId,
-                navigate,
-                items,
-            },config)
-            navigate('/payment', {
-                state: {
-                    price: price + shipping_fee,
-                    items,
-                    orderId: data.orderId
-                }
-            })
-            console.log(data)
-            return true
+
+            const { data } = await api.post(
+                '/home/order/palce-order',
+                {
+                    price,
+                    products,
+                    shipping_fee,
+                    shippingInfo,
+                    userId,
+                    payment_type
+                },
+                config
+            )
+
+            return data
+
         } catch (error) {
-            console.log(error.response)
+            return rejectWithValue(error.response?.data)
         }
     }
 )
@@ -67,7 +65,7 @@ export const get_orders = createAsyncThunk(
         try {
             const {
                 data
-            } = await api.get(`/home/customer/gat-orders/${customerId}/${status}`,config)
+            } = await api.get(`/home/customer/gat-orders/${customerId}/${status}`, config)
             return fulfillWithValue(data)
         } catch (error) {
             console.log(error.response)
@@ -91,7 +89,7 @@ export const get_order = createAsyncThunk(
         try {
             const {
                 data
-            } = await api.get(`/home/customer/gat-order/${orderId}`,config)
+            } = await api.get(`/home/customer/gat-order/${orderId}`, config)
             return fulfillWithValue(data)
         } catch (error) {
             console.log(error.response)

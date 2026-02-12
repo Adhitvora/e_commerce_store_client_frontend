@@ -1,88 +1,106 @@
-import React, { useEffect, useState } from 'react'
-import { Link } from 'react-router-dom'
-import FadeLoader from 'react-spinners/FadeLoader'
-import axios from 'axios'
-import { loadStripe } from '@stripe/stripe-js'
-import error from '../assets/error.png'
-import success from '../assets/success.png'
-import { stripe_sky } from '../utils/config'
-import {api_url} from '../utils/config'
-const load = async () => {
-    return await loadStripe(stripe_sky)
-}
+import React, { useEffect, useState } from "react";
+import { Link, useParams } from "react-router-dom";
+import FadeLoader from "react-spinners/FadeLoader";
+import axios from "axios";
+import success from "../assets/success.png";
+import error from "../assets/error.png";
+import { api_url } from "../utils/config";
 
 const ConfirmOrder = () => {
-    const [loader, setLoader] = useState(true)
-    const [stripe, setStripe] = useState('')
-    const [message, setMessage] = useState(null)
+  const { orderId } = useParams();
+  const [loading, setLoading] = useState(true);
+  const [status, setStatus] = useState(null);
 
+  useEffect(() => {
+    const checkOrderStatus = async () => {
+      try {
+        const { data } = await axios.get(
+          `${api_url}/api/home/customer/gat-order/${orderId}`,
+          {
+            headers: {
+              authorization: `Bearer ${localStorage.getItem("token")}`,
+            },
+          },
+        );
+        const order = data?.order;
 
-    useEffect(() => {
-        if (!stripe) {
-            return
+        if (!order) {
+          setStatus("failed");
+          return;
         }
-        const clientSecret = new URLSearchParams(window.location.search).get('payment_intent_client_secret')
-        if (!clientSecret) {
-            return
-        }
-        stripe.retrievePaymentIntent(clientSecret).then(({ paymentIntent }) => {
-            switch (paymentIntent.status) {
-                case "succeeded":
-                    setMessage('succeeded')
-                    break
-                case "processing":
-                    setMessage('processing')
-                    break
-                case "requires_payment_method":
-                    setMessage('failed')
-                    break
-                default:
-                    setMessage('failed')
-            }
-        })
-    }, [stripe])
 
-    const get_load = async () => {
-        const tempStripe = await load()
-        setStripe(tempStripe)
+        // ✅ COD ORDER
+        if (order.payment_type === "cod") {
+          setStatus("success");
+        }
+
+        // ✅ ONLINE PAID
+        else if (
+          order.payment_type === "online" &&
+          order.payment_status === "paid"
+        ) {
+          setStatus("success");
+        }
+
+        // ❌ ONLINE FAILED
+        else {
+          setStatus("failed");
+        }
+      } catch (error) {
+        setStatus("failed");
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    if (orderId) {
+      checkOrderStatus();
     }
-    useEffect(() => {
-        get_load()
-    }, [])
+  }, [orderId]);
 
+  return (
+    <div className="w-screen h-screen flex justify-center items-center bg-gray-100">
+      <div className="bg-white shadow-lg rounded-lg p-10 flex flex-col items-center gap-6">
+        {loading ? (
+          <FadeLoader color="#16a34a" />
+        ) : status === "success" ? (
+          <>
+            <img src={success} alt="success" className="w-28" />
 
-    const update_payment = async () => {
-        const orderId = localStorage.getItem('orderId')
-        if (orderId) {
-            try {
-                await axios.get(`${api_url}/api/order/confirm/${orderId}`)
-                localStorage.removeItem('orderId')
-                setLoader(false)
-            } catch (error) {
-                console.log(error.response.data)
-            }
-        }
-    }
+            <h2 className="text-2xl font-semibold text-green-600">
+              Order Placed Successfully
+            </h2>
 
-    useEffect(() => {
-        if (message === 'succeeded') {
-            update_payment()
-        }
-    }, [message])
+            <p className="text-slate-500 text-sm">Order ID: {orderId}</p>
 
-    return (
-        <div className='w-screeen h-screen flex justify-center items-center flex-col gap-4'>
-            {
-                (message === 'failed' || message === 'processing') ? <>
-                    <img src={error} alt="error logo" />
-                    <Link className='px-5 py-2 bg-green-500 rounded-sm text-white' to='/dashboard/my-orders'>Back to Dashboard</Link>
-                </> : message === 'succeeded' ? loader ? <FadeLoader /> : <>
-                    <img src={success} alt="error logo" />
-                    <Link className='px-5 py-2 bg-green-500 rounded-sm text-white' to='/dashboard/my-orders'>Back to Dashboard</Link>
-                </> : <FadeLoader />
-            }
-        </div>
-    )
-}
+            <Link
+              className="px-6 py-2 bg-green-600 hover:bg-green-700 transition text-white rounded-md"
+              to="/dashboard/my-orders"
+            >
+              Go to My Orders
+            </Link>
+          </>
+        ) : (
+          <>
+            <img src={error} alt="error" className="w-28" />
 
-export default ConfirmOrder
+            <h2 className="text-2xl font-semibold text-red-600">
+              Payment Failed
+            </h2>
+
+            <p className="text-slate-500 text-sm">Order ID: {orderId}</p>
+
+            <Link
+              className="px-6 py-2 bg-red-600 hover:bg-red-700 transition text-white rounded-md"
+              to="/dashboard/my-orders"
+            >
+              Back to Orders
+            </Link>
+          </>
+        )}
+      </div>
+    </div>
+  );
+};
+
+export default ConfirmOrder;
