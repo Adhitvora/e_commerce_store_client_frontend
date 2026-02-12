@@ -1,10 +1,11 @@
 import React, { useState } from "react";
 import Headers from "../components/Headers";
 import Footer from "../components/Footer";
-import { useLocation, Link, useNavigate } from "react-router-dom";
-import { MdOutlineKeyboardArrowRight } from "react-icons/md";
+import { useLocation, useNavigate } from "react-router-dom";
 import { useDispatch, useSelector } from "react-redux";
 import { place_order } from "../store/reducers/orderReducer";
+import axios from "axios";
+import { api_url } from "../utils/config";
 
 const Shipping = () => {
   const navigate = useNavigate();
@@ -74,8 +75,24 @@ const Shipping = () => {
         amount: razorpayOrder.amount,
         currency: razorpayOrder.currency,
         order_id: razorpayOrder.id,
-        handler: function () {
-          navigate(`/order/success/${orderId}`);
+        handler: async function (response) {
+          try {
+            await axios.post(
+              `${api_url}/api/order/verify-payment`,
+              {
+                orderId,
+                razorpay_order_id: response.razorpay_order_id,
+                razorpay_payment_id: response.razorpay_payment_id,
+                razorpay_signature: response.razorpay_signature,
+              },
+              { withCredentials: true },
+            );
+
+            navigate(`/order/success/${orderId}`);
+          } catch (error) {
+            console.log("verify payment error:", error.response?.data || error);
+            alert("Payment ho gaya, lekin verification fail hua. Please retry.");
+          }
         },
       };
 
