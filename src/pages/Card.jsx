@@ -26,6 +26,7 @@ const Card = () => {
     shipping_fee,
     outofstock_products,
   } = useSelector((state) => state.card);
+  const userId = userInfo?.id;
 
   const redirect = () => {
     navegate("/shipping", {
@@ -38,16 +39,19 @@ const Card = () => {
     });
   };
   useEffect(() => {
-    dispatch(get_card_products(userInfo.id));
-  }, []);
+    if (!userId) return;
+    dispatch(get_card_products(userId));
+  }, [dispatch, userId]);
 
   useEffect(() => {
     if (successMessage) {
       toast.success(successMessage);
       dispatch(messageClear());
-      dispatch(get_card_products(userInfo.id));
+      if (userId) {
+        dispatch(get_card_products(userId));
+      }
     }
-  }, [successMessage]);
+  }, [successMessage, dispatch, userId]);
 
   const inc = (quantity, stock, card_id) => {
     const temp = quantity + 1;

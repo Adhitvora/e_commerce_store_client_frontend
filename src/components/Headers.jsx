@@ -1,7 +1,7 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import { GrMail } from "react-icons/gr";
 import { IoIosCall } from "react-icons/io";
-import { MdOutlineKeyboardArrowDown } from "react-icons/md";
+import { MdKeyboardArrowRight, MdOutlineKeyboardArrowDown } from "react-icons/md";
 import {
   FaLinkedinIn,
   FaFacebookF,
@@ -22,280 +22,513 @@ import {
   get_wishlist_products,
 } from "../store/reducers/cardReducer";
 
+const navItems = [
+  { label: "Home", to: "/" },
+  { label: "Shop", to: "/shops" },
+  { label: "About" },
+  { label: "Contact" },
+];
+
 const Headers = () => {
   const dispatch = useDispatch();
   const navigate = useNavigate();
+  const { pathname } = useLocation();
+
   const { categorys } = useSelector((state) => state.home);
   const { userInfo } = useSelector((state) => state.auth);
+  const userId = userInfo?.id;
   const { card_product_count, wishlist_count } = useSelector(
     (state) => state.card,
   );
 
-  const { pathname } = useLocation();
   const [showShidebar, setShowShidebar] = useState(true);
   const [categoryShow, setCategoryShow] = useState(true);
   const [searchValue, setSearchValue] = useState("");
   const [category, setCategory] = useState("");
+  const [desktopCategoryOpen, setDesktopCategoryOpen] = useState(false);
+  const [mobileCategoryOpen, setMobileCategoryOpen] = useState(false);
+  const desktopCategoryRef = useRef(null);
+  const mobileCategoryRef = useRef(null);
 
   const search = () => {
     navigate(`/products/search?category=${category}&&value=${searchValue}`);
   };
+
   const redirect_card_page = () => {
-    if (userInfo) {
-      navigate(`/card`);
-    } else {
-      navigate(`/login`);
-    }
+    navigate(userInfo ? "/card" : "/login");
+  };
+
+  const selectSearchCategory = (value) => {
+    setCategory(value);
+    setDesktopCategoryOpen(false);
+    setMobileCategoryOpen(false);
   };
 
   useEffect(() => {
-    if (userInfo) {
-      dispatch(get_card_products(userInfo.id));
-      dispatch(get_wishlist_products(userInfo.id));
+    if (userId) {
+      dispatch(get_card_products(userId));
+      dispatch(get_wishlist_products(userId));
     }
-  }, [userInfo]);
+  }, [dispatch, userId]);
+
+  useEffect(() => {
+    const handleOutsideClick = (event) => {
+      if (
+        desktopCategoryRef.current &&
+        !desktopCategoryRef.current.contains(event.target)
+      ) {
+        setDesktopCategoryOpen(false);
+      }
+
+      if (
+        mobileCategoryRef.current &&
+        !mobileCategoryRef.current.contains(event.target)
+      ) {
+        setMobileCategoryOpen(false);
+      }
+    };
+
+    document.addEventListener("mousedown", handleOutsideClick);
+    return () => document.removeEventListener("mousedown", handleOutsideClick);
+  }, []);
+
+  const activeClass = (to) =>
+    to && pathname === to ? "text-[#f97316]" : "text-slate-700";
+
   return (
-    <div className="w-full bg-white mb-5">
-      <div className="header-top bg-slate-100 md-lg:hidden">
+    <header className="w-full bg-[#fffaf6] border-b border-[#f2dfd4] mb-5">
+      <div className="bg-[#111827] text-white md-lg:hidden">
         <div className="max-w-[1440px] mx-auto px-16 sm:px-5 md-lg:px-12 md:px-10">
-          <div className="flex w-full justify-between items-center h-[50px] text-slate-500">
-            <ul className="flex justify-start items-center gap-8">
-              <li className="flex relative justify-center items-center gap-2 text-sm after:absolute after:h-[18px] after:w-[1px] after:bg-[#afafaf] after:-right-[16px]">
-                <span>
-                  <GrMail />
-                </span>
+          <div className="h-[44px] flex items-center justify-between text-sm">
+            <div className="flex items-center gap-6">
+              <div className="flex items-center gap-2">
+                <GrMail />
                 <span>myhaat24@gmail.com</span>
-              </li>
-              <span>my haat ecommerce</span>
-            </ul>
-            <div>
-              <div className="flex justify-center items-center gap-10">
-                <div className="flex justify-center items-center gap-4">
-                  <a href="#">
-                    <FaFacebookF />
-                  </a>
-                  <a href="#">
-                    <AiOutlineTwitter />
-                  </a>
-                  <a href="#">
-                    <FaLinkedinIn />
-                  </a>
-                  <a href="#">
-                    <AiFillGithub />
-                  </a>
-                </div>
-                <div className="flex group cursor-pointer text-slate-800 text-sm justify-center items-center gap-1 relative after:h-[18px] after:w-[1px] after:bg-[#afafaf] after:-right-[16px] after:absolute before:absolute before:h-[18px] before:bg-[#afafaf] before:w-[1px] before:-left-[20px]">
-                  <img src="/images/language.png" alt="" />
-                  <span>
-                    <MdOutlineKeyboardArrowDown />
-                  </span>
-                  <ul className="absolute invisible transition-all to-12 rounded-sm duration-200 text-white p-2 w-[100px] flex flex-col gap-3 group-hover:visible group-hover:top-6 group-hover:bg-black z-10">
-                    <li>Bangla</li>
-                    <li>English</li>
-                  </ul>
-                </div>
-                {userInfo ? (
-                  <Link
-                    className="flex cursor-pointer justify-center items-center gap-2 text-sm"
-                    to="/dashboard"
-                  >
-                    <span>
-                      <FaUser />
-                    </span>
-                    <span>{userInfo.name}</span>
-                  </Link>
-                ) : (
-                  <Link
-                    to="/login"
-                    className="flex cursor-pointer justify-center items-center gap-2 text-sm"
-                  >
-                    <span>
-                      <FaLock />
-                    </span>
-                    <span>Login</span>
-                  </Link>
-                )}
               </div>
+              <span>my haat ecommerce</span>
+            </div>
+            <div className="flex items-center gap-5">
+              <div className="flex items-center gap-3">
+                <a href="#">
+                  <FaFacebookF />
+                </a>
+                <a href="#">
+                  <AiOutlineTwitter />
+                </a>
+                <a href="#">
+                  <FaLinkedinIn />
+                </a>
+                <a href="#">
+                  <AiFillGithub />
+                </a>
+              </div>
+              {userInfo ? (
+                <Link to="/dashboard" className="flex items-center gap-2 font-medium">
+                  <FaUser />
+                  <span>{userInfo.name}</span>
+                </Link>
+              ) : (
+                <Link to="/login" className="flex items-center gap-2 font-medium">
+                  <FaLock />
+                  <span>Login</span>
+                </Link>
+              )}
             </div>
           </div>
         </div>
       </div>
 
-      {/* Middle-bar */}
-
-      <div className="w-white">
-        <div className="max-w-[1440px] mx-auto px-16 sm:px-5 md-lg:px-12 md:px-10">
-          <div className="h-[80px] md-lg:h-[100px] flex justify-between items-center flex-wrap">
-            <div className="md-lg:w-full w-3/12 md-lg:pt-4 overflow-hidden  flex justify-center items-center">
-              <div className="flex justify-between items-center w-[70%] lg:w-full">
-                <Link to="/">
-                  <img
-                    src="/images/logo.png"
-                    alt="logo"
-                    className="max-w-full w-[95%] xl:w-[95%] lg:w-[95%] md-lg:w-[30%] md:w-[35%] sm:w-[85%] xs:w-[75%] 2xs:w-[85%] h-auto object-contain"
-                  />
-                </Link>
-                <div
-                  className="justify-center items-center w-[30px] h-[30px] bg-white text-slate-600 border border-slate-600 rounded-sm cursor-pointer lg:hidden md-lg:flex xl:hidden hidden"
-                  onClick={() => setShowShidebar(false)}
+      <div className="bg-white">
+        <div className="max-w-[1440px] mx-auto px-16 sm:px-5 md-lg:px-12 md:px-10 py-4">
+          <div className="flex items-center gap-4 md-lg:flex-wrap">
+            <div className="w-3/12 lg:w-4/12 md-lg:w-full flex items-center justify-between">
+              <button
+                onClick={() => setShowShidebar(false)}
+                className="hidden md-lg:flex w-[36px] h-[36px] rounded-md bg-[#fff1e8] text-[#f97316] justify-center items-center"
+              >
+                <FaList />
+              </button>
+              <Link to="/" className="block w-[190px] md-lg:w-[150px]">
+                <img src="/images/logo.png" alt="logo" className="w-full h-auto object-contain" />
+              </Link>
+              <div className="hidden md-lg:flex items-center gap-2">
+                <button
+                  onClick={() =>
+                    navigate(userInfo ? "/dashboard/my-wishlist" : "/login")
+                  }
+                  className="relative w-[34px] h-[34px] rounded-full bg-[#fff1e8] text-[#f97316] flex items-center justify-center"
                 >
-                  <span>
-                    <FaList />
-                  </span>
-                </div>
+                  <AiFillHeart />
+                  {wishlist_count !== 0 && (
+                    <span className="absolute -top-1 -right-1 min-w-[16px] h-[16px] px-[3px] rounded-full bg-[#f97316] text-[10px] text-white flex items-center justify-center">
+                      {wishlist_count}
+                    </span>
+                  )}
+                </button>
+                <button
+                  onClick={redirect_card_page}
+                  className="relative w-[34px] h-[34px] rounded-full bg-[#fff1e8] text-[#f97316] flex items-center justify-center"
+                >
+                  <AiFillShopping />
+                  {card_product_count !== 0 && (
+                    <span className="absolute -top-1 -right-1 min-w-[16px] h-[16px] px-[3px] rounded-full bg-[#f97316] text-[10px] text-white flex items-center justify-center">
+                      {card_product_count}
+                    </span>
+                  )}
+                </button>
               </div>
             </div>
-            <div className="md-lg:w-full w-9/12">
-              <div className="flex justify-between md-lg:justify-center items-center flex-wrap pl-8">
-                <ul className="flex justify-start items-start gap-8 text-sm font-bold uppercase md-lg:hidden">
-                  <li>
-                    <Link
-                      to={"/"}
-                      className={`p-2 block ${pathname === "/" ? "text-[#7fad39]" : "text-slate-600"}`}
-                    >
-                      Home
-                    </Link>
-                  </li>
-                  <li>
-                    <Link
-                      to="/shops"
-                      className={`p-2 block ${pathname === "/shops" ? "text-[#7fad39]" : "text-slate-600"}`}
-                    >
-                      Shop
-                    </Link>
-                  </li>
-         
-                  <li>
-                    <Link
-                      className={`p-2 block ${pathname === "/about" ? "text-[#7fad39]" : "text-slate-600"}`}
-                    >
-                      About
-                    </Link>
-                  </li>
-                  <li>
-                    <Link
-                      className={`p-2 block ${pathname === "/contact" ? "text-[#7fad39]" : "text-slate-600"}`}
-                    >
-                      Contact
-                    </Link>
-                  </li>
-                </ul>
-                <div className="flex md-lg:hidden justify-center items-center gap-5">
-                  <div className="flex justify-center gap-5">
-                    <div
-                      onClick={() =>
-                        navigate(userInfo ? "/dashboard/my-wishlist" : "/login")
-                      }
-                      className="relative flex justify-center items-center cursor-pointer w-[35px] h-[35px] rounded-full bg-[#e2e2e2]"
-                    >
-                      <span className="text-xl text-red-500">
-                        <AiFillHeart />
-                      </span>
-                      {wishlist_count !== 0 && (
-                        <div className="w-[20px] h-[20px] absolute bg-green-500 rounded-full text-white flex justify-center items-center -top-[3px] -right-[5px]">
-                          {wishlist_count}
-                        </div>
-                      )}
-                    </div>
-                    <div
-                      onClick={redirect_card_page}
-                      className="relative flex justify-center items-center cursor-pointer w-[35px] h-[35px] rounded-full bg-[#e2e2e2]"
-                    >
-                      <span className="text-xl text-orange-500">
-                        <AiFillShopping />
-                      </span>
-                      {card_product_count !== 0 && (
-                        <div className="w-[20px] h-[20px] absolute bg-green-500 rounded-full text-white flex justify-center items-center -top-[3px] -right-[5px]">
-                          {card_product_count}
-                        </div>
-                      )}
-                    </div>
+
+            <div className="w-6/12 lg:w-5/12 md-lg:w-full">
+              <div className="hidden md-lg:block mb-2" ref={mobileCategoryRef}>
+                <div className="relative">
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setMobileCategoryOpen((prev) => !prev);
+                      setDesktopCategoryOpen(false);
+                    }}
+                    className="w-full h-[42px] rounded-lg border border-[#f3d8c9] bg-white px-3 text-sm text-slate-700 flex items-center justify-between"
+                  >
+                    <span className={category ? "text-slate-700" : "text-slate-500"}>
+                      {category || "Select category"}
+                    </span>
+                    <MdOutlineKeyboardArrowDown
+                      className={`text-[20px] text-[#f97316] transition-transform duration-300 ${
+                        mobileCategoryOpen ? "rotate-180" : "rotate-0"
+                      }`}
+                    />
+                  </button>
+
+                  <div
+                    className={`absolute left-0 top-[46px] z-[60] w-full rounded-lg border border-[#f3d8c9] bg-white shadow-lg transition-all duration-200 ${
+                      mobileCategoryOpen
+                        ? "opacity-100 visible translate-y-0"
+                        : "opacity-0 invisible -translate-y-1 pointer-events-none"
+                    }`}
+                  >
+                    <ul className="max-h-[230px] overflow-auto p-1.5 space-y-1">
+                      <li>
+                        <button
+                          type="button"
+                          onClick={() => selectSearchCategory("")}
+                          className="w-full text-left rounded-md px-2.5 py-2 text-sm text-slate-600 hover:bg-[#fff5ee] hover:text-[#c2410c]"
+                        >
+                          All categories
+                        </button>
+                      </li>
+                      {categorys.map((c, i) => (
+                        <li key={i}>
+                          <button
+                            type="button"
+                            onClick={() => selectSearchCategory(c.name)}
+                            className={`w-full text-left rounded-md px-2.5 py-2 text-sm hover:bg-[#fff5ee] ${
+                              category === c.name
+                                ? "text-[#c2410c] bg-[#fff3ea] font-medium"
+                                : "text-slate-700"
+                            }`}
+                          >
+                            {c.name}
+                          </button>
+                        </li>
+                      ))}
+                    </ul>
                   </div>
                 </div>
               </div>
+              <div className="relative h-[46px] rounded-xl border border-[#f3d8c9] bg-[#fffaf6] flex items-center">
+                <div
+                  className="relative h-full border-r border-[#f3d8c9] md-lg:hidden"
+                  ref={desktopCategoryRef}
+                >
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setDesktopCategoryOpen((prev) => !prev);
+                      setMobileCategoryOpen(false);
+                    }}
+                    className="w-[170px] h-full px-3 text-sm text-slate-700 flex items-center justify-between"
+                  >
+                    <span className={`${category ? "text-slate-700" : "text-slate-500"} truncate pr-2`}>
+                      {category || "Category"}
+                    </span>
+                    <MdOutlineKeyboardArrowDown
+                      className={`text-[20px] text-[#f97316] transition-transform duration-300 ${
+                        desktopCategoryOpen ? "rotate-180" : "rotate-0"
+                      }`}
+                    />
+                  </button>
+
+                  <div
+                    className={`absolute left-0 top-[calc(100%+8px)] z-[60] w-[230px] rounded-lg border border-[#f3d8c9] bg-white shadow-lg transition-all duration-200 ${
+                      desktopCategoryOpen
+                        ? "opacity-100 visible translate-y-0"
+                        : "opacity-0 invisible -translate-y-1 pointer-events-none"
+                    }`}
+                  >
+                    <div className="px-3 py-2 border-b border-[#f8e7dc] bg-[#fff8f3]">
+                      <h3 className="text-[11px] font-bold uppercase tracking-wide text-[#c2410c]">
+                        Select Category
+                      </h3>
+                    </div>
+                    <ul className="max-h-[260px] overflow-auto p-1.5 space-y-1">
+                      <li>
+                        <button
+                          type="button"
+                          onClick={() => selectSearchCategory("")}
+                          className="w-full text-left rounded-md px-2.5 py-2 text-sm text-slate-600 hover:bg-[#fff5ee] hover:text-[#c2410c]"
+                        >
+                          All categories
+                        </button>
+                      </li>
+                      {categorys.map((c, i) => (
+                        <li key={i}>
+                          <button
+                            type="button"
+                            onClick={() => selectSearchCategory(c.name)}
+                            className={`w-full text-left rounded-md px-2.5 py-2 text-sm hover:bg-[#fff5ee] ${
+                              category === c.name
+                                ? "text-[#c2410c] bg-[#fff3ea] font-medium"
+                                : "text-slate-700"
+                            }`}
+                          >
+                            {c.name}
+                          </button>
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+                </div>
+                <input
+                  className="flex-1 h-full bg-transparent px-3 text-sm text-slate-700 outline-none"
+                  onChange={(e) => setSearchValue(e.target.value)}
+                  type="text"
+                  placeholder="Search sarees, fabrics, designs & offers"
+                />
+                <button
+                  onClick={search}
+                  className="h-full px-6 md:px-4 bg-[#f97316] text-white text-sm font-semibold uppercase"
+                >
+                  Search
+                </button>
+              </div>
+            </div>
+
+            <div className="w-3/12 lg:w-3/12 md-lg:hidden flex items-center justify-end gap-3">
+              <button
+                onClick={() => navigate(userInfo ? "/dashboard/my-wishlist" : "/login")}
+                className="relative w-[38px] h-[38px] rounded-full bg-[#fff1e8] text-[#f97316] flex items-center justify-center"
+              >
+                <AiFillHeart />
+                {wishlist_count !== 0 && (
+                  <span className="absolute -top-1 -right-1 min-w-[18px] h-[18px] px-1 rounded-full bg-[#f97316] text-[10px] text-white flex items-center justify-center">
+                    {wishlist_count}
+                  </span>
+                )}
+              </button>
+              <button
+                onClick={redirect_card_page}
+                className="relative w-[38px] h-[38px] rounded-full bg-[#fff1e8] text-[#f97316] flex items-center justify-center"
+              >
+                <AiFillShopping />
+                {card_product_count !== 0 && (
+                  <span className="absolute -top-1 -right-1 min-w-[18px] h-[18px] px-1 rounded-full bg-[#f97316] text-[10px] text-white flex items-center justify-center">
+                    {card_product_count}
+                  </span>
+                )}
+              </button>
+              {userInfo ? (
+                <Link
+                  to="/dashboard"
+                  className="flex items-center gap-2 rounded-lg px-3 py-2 bg-[#fff1e8] text-[#c2410c] text-sm font-medium"
+                >
+                  <FaUser />
+                  <span className="max-w-[110px] truncate">{userInfo.name}</span>
+                </Link>
+              ) : (
+                <Link
+                  to="/login"
+                  className="flex items-center gap-2 rounded-lg px-3 py-2 bg-[#fff1e8] text-[#c2410c] text-sm font-medium"
+                >
+                  <FaLock />
+                  <span>Login</span>
+                </Link>
+              )}
             </div>
           </div>
         </div>
       </div>
 
-      <div className="hidden md-lg:block">
-        <div
-          onClick={() => setShowShidebar(true)}
-          className={`fixed duration-200 transition-all ${showShidebar ? "invisible" : "visible"} hidden md-lg:block w-screen h-screen bg-[rgba(0,0,0,0.5)] top-0 left-0 z-20`}
-        ></div>
-        <div
-          className={`w-[300px] z-[9999] transition-all duration-200 fixed  ${showShidebar ? "-left-[300px]" : "left-0"} top-0 overflow-y-auto bg-white h-screen py-6 px-8`}
-        >
-          <div className="flex justify-start flex-col gap-6">
-            <Link to="/">
-              <img src="/images/logo.png" alt="logo" />
-            </Link>
-            <div className="flex justify-star items-center gap-10">
-              <div className="flex group cursor-pointer text-slate-800 text-sm justify-center items-center gap-1 relative after:h-[18px] after:w-[1px] after:bg-[#afafaf] after:-right-[16px] after:absolute">
-                <img src="/images/language.png" alt="" />
-                <span>
-                  <MdOutlineKeyboardArrowDown />
+      <div className="bg-white border-t border-slate-100 md-lg:hidden">
+        <div className="max-w-[1440px] mx-auto px-16 sm:px-5 md-lg:px-12 md:px-10">
+          <div className="h-[58px] flex items-center justify-between gap-6">
+            <div className="relative w-[240px]">
+              <button
+                onClick={() => setCategoryShow(!categoryShow)}
+                className="h-[42px] w-full rounded-lg bg-gradient-to-r from-[#111827] to-[#1f2937] text-[#fde68a] px-4 text-sm font-semibold flex items-center justify-between"
+              >
+                <span className="flex items-center gap-2">
+                  <FaList />
+                  All Category
                 </span>
-                <ul className="absolute invisible transition-all to-12 rounded-sm duration-200 text-white p-2 w-[100px] flex flex-col gap-3 group-hover:visible group-hover:top-6 group-hover:bg-black z-10">
-                  <li>English</li>
+                <MdOutlineKeyboardArrowDown
+                  className={`text-[20px] transition-transform duration-300 ${
+                    categoryShow ? "rotate-0" : "rotate-180"
+                  }`}
+                />
+              </button>
+              <div
+                className={`absolute top-[46px] left-0 z-50 w-full bg-white border border-[#f3d8c9] rounded-xl shadow-lg overflow-hidden transition-all duration-300 ${
+                  categoryShow ? "max-h-0 opacity-0 translate-y-1" : "max-h-[390px] opacity-100 translate-y-0"
+                }`}
+              >
+                <div className="px-3 py-2 border-b border-[#f7e5d8] bg-[#fff8f3]">
+                  <h3 className="text-[11px] font-bold uppercase tracking-wider text-[#c2410c]">
+                    Browse Categories
+                  </h3>
+                </div>
+                <ul className="p-2 max-h-[340px] overflow-auto space-y-1">
+                  {categorys.map((c, i) => (
+                    <li key={i}>
+                      <Link
+                        to={`/products?category=${c.name}`}
+                        onClick={() => setCategoryShow(true)}
+                        className="flex items-center justify-between rounded-lg px-2.5 py-2 text-sm text-slate-700 border border-transparent hover:border-[#fde0cf] hover:bg-[#fff5ee] transition-all"
+                      >
+                        <span className="flex items-center gap-2">
+                          <img
+                            src={c.image}
+                            alt={c.name}
+                            className="w-[28px] h-[28px] rounded-full object-cover ring-1 ring-[#f3d8c9]"
+                          />
+                          <span>{c.name}</span>
+                        </span>
+                        <MdKeyboardArrowRight className="text-[#f97316]" />
+                      </Link>
+                    </li>
+                  ))}
                 </ul>
               </div>
+            </div>
+
+            <ul className="flex items-center gap-7 text-sm font-semibold uppercase">
+              {navItems.map((item) => (
+                <li key={item.label}>
+                  {item.to ? (
+                    <Link to={item.to} className={activeClass(item.to)}>
+                      {item.label}
+                    </Link>
+                  ) : (
+                    <span className="text-slate-700">{item.label}</span>
+                  )}
+                </li>
+              ))}
+            </ul>
+
+            <div className="flex items-center gap-3 text-slate-600">
+              <div className="w-[38px] h-[38px] rounded-full bg-[#fff1e8] text-[#f97316] flex items-center justify-center">
+                <IoIosCall />
+              </div>
+              <div className="text-right">
+                <h2 className="text-sm font-medium text-slate-700">+91 6296151740</h2>
+                <span className="text-xs text-slate-500">support 24/7 time</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div className="md-lg:block hidden">
+        <div
+          onClick={() => setShowShidebar(true)}
+          className={`fixed inset-0 z-[99998] bg-[rgba(0,0,0,0.45)] transition-all duration-200 ${
+            showShidebar ? "invisible opacity-0" : "visible opacity-100"
+          }`}
+        />
+        <aside
+          className={`fixed top-0 z-[99999] h-screen w-[300px] bg-white shadow-xl transition-all duration-300 ${
+            showShidebar ? "-left-[320px]" : "left-0"
+          }`}
+        >
+          <div className="h-full overflow-y-auto p-5">
+            <div className="flex items-center justify-between">
+              <Link to="/" onClick={() => setShowShidebar(true)} className="w-[130px]">
+                <img src="/images/logo.png" alt="logo" className="w-full h-auto" />
+              </Link>
+              <button
+                onClick={() => setShowShidebar(true)}
+                className="text-xs font-semibold uppercase rounded-md border border-[#f3d8c9] px-3 py-1 text-[#c2410c]"
+              >
+                Close
+              </button>
+            </div>
+
+            <div className="mt-5 rounded-lg bg-[#fff3ea] px-3 py-2">
               {userInfo ? (
                 <Link
-                  className="flex cursor-pointer justify-center items-center gap-2 text-sm"
                   to="/dashboard"
+                  onClick={() => setShowShidebar(true)}
+                  className="flex items-center gap-2 text-sm font-medium text-slate-700"
                 >
-                  <span>
-                    <FaUser />
-                  </span>
+                  <FaUser className="text-[#f97316]" />
                   <span>{userInfo.name}</span>
                 </Link>
               ) : (
                 <Link
                   to="/login"
-                  className="flex cursor-pointer justify-center items-center gap-2 text-sm"
+                  onClick={() => setShowShidebar(true)}
+                  className="flex items-center gap-2 text-sm font-medium text-slate-700"
                 >
-                  <span>
-                    <FaLock />
-                  </span>
+                  <FaLock className="text-[#f97316]" />
                   <span>Login</span>
                 </Link>
               )}
             </div>
-            <ul className="flex flex-col justify-start items-start  text-md font-semibold uppercase">
-              <li>
-                <Link
-                  to={"/"}
-                  className={`py-2 block ${pathname === "/" ? "text-[#7fad39]" : "text-slate-600"}`}
-                >
-                  Home
-                </Link>
-              </li>
-              <li>
-                <Link
-                  to={"/shops"}
-                  className={`py-2 block ${pathname === "/shops" ? "text-[#7fad39]" : "text-slate-600"}`}
-                >
-                  Shop
-                </Link>
-              </li>
-              
-              <li>
-                <Link
-                  className={`py-2 block ${pathname === "/about" ? "text-[#7fad39]" : "text-slate-600"}`}
-                >
-                  About
-                </Link>
-              </li>
-              <li>
-                <Link
-                  className={`py-2 block ${pathname === "/contact" ? "text-[#7fad39]" : "text-slate-600"}`}
-                >
-                  Contact
-                </Link>
-              </li>
+
+            <ul className="mt-5 flex flex-col gap-2 text-sm font-semibold uppercase">
+              {navItems.map((item) => (
+                <li key={item.label}>
+                  {item.to ? (
+                    <Link
+                      to={item.to}
+                      onClick={() => setShowShidebar(true)}
+                      className={`block rounded-md px-3 py-2 ${
+                        pathname === item.to
+                          ? "bg-[#fff1e8] text-[#c2410c]"
+                          : "text-slate-700"
+                      }`}
+                    >
+                      {item.label}
+                    </Link>
+                  ) : (
+                    <span className="block rounded-md px-3 py-2 text-slate-700">
+                      {item.label}
+                    </span>
+                  )}
+                </li>
+              ))}
             </ul>
-            <div className="flex justify-start  items-center gap-4">
+
+            <div className="mt-6">
+              <h3 className="text-xs font-bold uppercase tracking-wide text-slate-500 mb-2">
+                All Categories
+              </h3>
+              <div className="max-h-[270px] overflow-auto border border-[#f3d8c9] rounded-lg">
+                {categorys.map((c, i) => (
+                  <Link
+                    key={i}
+                    to={`/products?category=${c.name}`}
+                    onClick={() => setShowShidebar(true)}
+                    className="flex items-center gap-2 px-3 py-2 border-b border-[#f8e7dc] last:border-b-0 text-sm text-slate-700"
+                  >
+                    <img src={c.image} alt={c.name} className="w-[26px] h-[26px] rounded-full object-cover" />
+                    <span>{c.name}</span>
+                  </Link>
+                ))}
+              </div>
+            </div>
+
+            <div className="mt-6 flex items-center gap-4 text-slate-600">
               <a href="#">
                 <FaFacebookF />
               </a>
@@ -309,132 +542,24 @@ const Headers = () => {
                 <AiFillGithub />
               </a>
             </div>
-            <div className="w-full flex justify-end md-lg:justify-start gap-3 items-center">
-              <div className="w-[48px] h-[48px] rounded-full flex bg-[#f5f5f5] justify-center items-center">
-                <span>
-                  <IoIosCall />
-                </span>
+
+            <div className="mt-6 flex items-center gap-3">
+              <div className="w-[40px] h-[40px] rounded-full bg-[#fff1e8] text-[#f97316] flex items-center justify-center">
+                <IoIosCall />
               </div>
-              <div className="flex justify-end flex-col gap-1">
-                <h2 className="text-sm font-medium text-slate-700">
-                  +916296151740
-                </h2>
-                <span className="text-xs">support 24/7 time</span>
+              <div>
+                <h2 className="text-sm font-medium text-slate-700">+91 6296151740</h2>
+                <span className="text-xs text-slate-500">support 24/7 time</span>
               </div>
             </div>
-            <ul className="flex flex-col justify-start items-start gap-3 text-[#1c1c1c]">
-              <li className="flex justify-start items-center gap-2  text-sm">
-                <span>
-                  <GrMail />
-                </span>
-                <span>myhaat24@gmail.com </span>
-              </li>
-              <span className="text-sm">Multi vendor ecommerce</span>
-            </ul>
+            <div className="mt-4 flex items-center gap-2 text-sm text-slate-600">
+              <GrMail />
+              <span>myhaat24@gmail.com</span>
+            </div>
           </div>
-        </div>
+        </aside>
       </div>
-      <div className="max-w-[1440px] mx-auto px-16 sm:px-5 md-lg:px-12 md:px-10">
-        <div className="flex w-full flex-wrap md-lg:gap-8">
-          <div className="w-3/12 md-lg:w-full">
-            <div className="bg-white relative">
-              <div
-                onClick={() => setCategoryShow(!categoryShow)}
-                className="h-[50px] bg-violet-400 text-white flex justify-center md-lg:justify-between md-lg:px-6 items-center gap-3 font-bold text-md cursor-pointer"
-              >
-                <div className="flex justify-center items-center gap-3">
-                  <span>
-                    <FaList />
-                  </span>
-                  <span>All Category</span>
-                </div>
-                <span className="pt-1">
-                  <MdOutlineKeyboardArrowDown />
-                </span>
-              </div>
-              <div
-                className={`${categoryShow ? "h-0" : "h-[400px]"} overflow-hidden transition-all md-lg:relative duration-500 absolute z-[99999] bg-white w-full border-x`}
-              >
-                <ul className="py-2 text-slate-600 font-medium h-full overflow-auto">
-                  {categorys.map((c, i) => {
-                    return (
-                      <li
-                        key={i}
-                        className="flex justify-start items-center gap-2 px-[24px] py-[6px]"
-                      >
-                        <img
-                          src={c.image}
-                          className="w-[30px] h-[30px] rounded-full overflow-hidden"
-                          alt={c.name}
-                        />
-                        <Link
-                          to={`/products?category=${c.name}`}
-                          className="text-sm block"
-                        >
-                          {c.name}
-                        </Link>
-                      </li>
-                    );
-                  })}
-                </ul>
-              </div>
-            </div>
-          </div>
-          <div className="w-9/12 pl-8 md-lg:pl-0 md-lg:w-full">
-            <div className="flex flex-wrap w-full justify-between items-center md-lg:gap-6">
-              <div className="w-8/12 md-lg:w-full">
-                <div className="flex border h-[50px] items-center relative gap-5">
-                  <div className="relative after:absolute after:h-[25px] after:w-[1px] after:bg-[#afafaf] after:-right-[15px] md:hidden">
-                    <select
-                      onChange={(e) => setCategory(e.target.value)}
-                      className="w-[150px] text-slate-600 font-semibold bg-transparent px-2 h-full outline-0 border-none"
-                      name=""
-                      id=""
-                    >
-                      <option value="">Select category</option>
-                      {categorys.map((c, i) => (
-                        <option key={i} value={c.name}>
-                          {c.name}
-                        </option>
-                      ))}
-                    </select>
-                  </div>
-                  <input
-                    className="w-full relative bg-transparent text-slate-500 outline-0 px-3 h-full"
-                    onChange={(e) => setSearchValue(e.target.value)}
-                    type="text"
-                    name=""
-                    id=""
-                    placeholder="Search sarees, fabrics, designs & offers"
-                  />
-                  <button
-                    onClick={search}
-                    className="bg-violet-400 right-0 absolute px-8 h-full font-semibold uppercase text-white"
-                  >
-                    Search
-                  </button>
-                </div>
-              </div>
-              <div className="w-4/12 block md-lg:hidden pl-2 md-lg:w-full md-lg:pl-0">
-                <div className="w-full flex justify-end md-lg:justify-start gap-3 items-center">
-                  <div className="w-[48px] h-[48px] rounded-full flex bg-[#f5f5f5] justify-center items-center">
-                    <span>
-                      <IoIosCall />
-                    </span>
-                  </div>
-                  <div className="flex justify-end flex-col gap-1">
-                    <h2 className="text-md font-medium text-slate-700">
-                      +91 6296151740
-                    </h2>
-                    <span className="text-sm">support 24/7 time</span>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
+    </header>
   );
 };
 

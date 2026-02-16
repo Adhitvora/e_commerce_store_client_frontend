@@ -4,6 +4,8 @@ import { FaFacebookF, FaLinkedin } from "react-icons/fa";
 import { AiFillGithub, AiOutlineTwitter } from "react-icons/ai";
 import { useSelector } from "react-redux";
 import { AiFillShopping, AiFillHeart } from "react-icons/ai";
+import { GrMail } from "react-icons/gr";
+import { IoIosCall } from "react-icons/io";
 
 const Footer = () => {
   const { card_product_count, wishlist_count } = useSelector(
@@ -11,151 +13,176 @@ const Footer = () => {
   );
   const navigate = useNavigate();
   const { userInfo } = useSelector((state) => state.auth);
+  const quickLinks = [
+    { label: "Home", path: "/" },
+    { label: "Shop", path: "/shops" },
+    { label: "My Account", path: "/dashboard" },
+    { label: "My Orders", path: "/dashboard/my-orders" },
+  ];
+  const supportLinks = [
+    { label: "Wishlist", path: "/dashboard/my-wishlist" },
+    { label: "Shipping", path: "/shipping" },
+    { label: "Return Policy", path: "/shipping" },
+    { label: "Help Center", path: "/dashboard" },
+  ];
+  const socialLinks = [
+    { icon: <FaFacebookF />, href: "https://facebook.com", label: "Facebook" },
+    { icon: <AiOutlineTwitter />, href: "https://x.com", label: "X" },
+    { icon: <FaLinkedin />, href: "https://linkedin.com", label: "LinkedIn" },
+    { icon: <AiFillGithub />, href: "https://github.com", label: "GitHub" },
+  ];
 
   return (
-    <footer className="bg-[#F3F6Fa]">
-      <div className="max-w-[1440px] px-16 sm:px-5 md-lg:px-12 md:px-10 flex flex-wrap mx-auto border-b py-16 md-lg:pb-10 sm:pb-6">
-        <div className="w-3/12 lg:w-4/12 sm:w-full">
-          <div className="flex flex-col gap-3">
-            <img
-              className="w-[190px] h-[70x]"
-              src="/images/logo.png"
-              alt="logo"
-            />
-            <ul className="flex flex-col gap-2 text-slate-700">
-              <li>Address :myhaat</li>
-              <li>Phone : +916296151740</li>
-              <li>Email : myhaat24@gmail.com </li>
-            </ul>
-          </div>
-        </div>
-        <div className="w-5/12 lg:w-8/12 sm:w-full">
-          <div className="flex justify-center sm:justify-start sm:mt-6 w-full">
-            <div>
-              <h2 className="font-bold text-lg mb-2">Usefull links</h2>
-              <div className="flex justify-between gap-[80px] lg:gap-[40px]">
-                <ul className="flex flex-col gap-2 text-slate-700 text-sm">
-                  <li>
-                    <Link>About Us</Link>
-                  </li>
-                  <li>
-                    <Link>About our Shop</Link>
-                  </li>
-                  <li>
-                    <Link>Delivery Information</Link>
-                  </li>
-                  <li>
-                    <Link>Privacy Policy</Link>
-                  </li>
-             
-                </ul>
-                <ul className="flex flex-col gap-2 text-slate-700 text-sm">
-                  <li>
-                    <Link>About Us</Link>
-                  </li>
-                  <li>
-                    <Link>About our Shop</Link>
-                  </li>
-                  <li>
-                    <Link>Delivery Information</Link>
-                  </li>
-                  <li>
-                    <Link>Privacy Policy</Link>
-                  </li>
-            
-                </ul>
+    <footer className="mt-14 bg-[#fffaf6] border-t border-[#f2dfd4] text-slate-700">
+      <div className="border-b border-[#f3d8c9]">
+        <div className="max-w-[1440px] mx-auto px-16 sm:px-5 md-lg:px-12 md:px-10 py-14 md-lg:py-10">
+          <div className="grid grid-cols-12 gap-7 md-lg:gap-6">
+            <div className="col-span-5 lg:col-span-12">
+              <div className="max-w-[450px]">
+                <div className="inline-flex items-center rounded-xl bg-white px-4 py-2 border border-[#f3d8c9] shadow-sm">
+                  <img
+                    className="w-[170px] h-auto"
+                    src="/images/logo.png"
+                    alt="shopp.my"
+                  />
+                </div>
+                <p className="text-sm text-slate-600 mt-5 leading-6">
+                  Stylish products, fast delivery and trusted checkout.
+                  Experience shopping designed around quality and value.
+                </p>
+
+                <div className="mt-6 space-y-2.5">
+                  <div className="flex items-center gap-3 text-sm text-slate-700">
+                    <span className="w-8 h-8 rounded-full bg-[#fff1e8] text-[#f97316] flex items-center justify-center">
+                      <IoIosCall />
+                    </span>
+                    <span>+91 6296151740</span>
+                  </div>
+                  <div className="flex items-center gap-3 text-sm text-slate-700">
+                    <span className="w-8 h-8 rounded-full bg-[#fff1e8] text-[#f97316] flex items-center justify-center">
+                      <GrMail />
+                    </span>
+                    <span>myhaat24@gmail.com</span>
+                  </div>
+                </div>
               </div>
             </div>
-          </div>
-        </div>
-        <div className="w-4/12 lg:w-full lg:mt-6">
-          <div className="w-full flex flex-col justify-start gap-5">
-            <h2 className="font-bold text-lg mb-2">Join Our</h2>
-            <span className="text-slate-700">
-              Get Email updates about our latest and shop specials offers
-            </span>
-            <div className="h-[50px] w-full bg-white border relative">
-              <input
-                placeholder="Enter your mail"
-                className="h-full bg-transparent w-full px-3 outline-0"
-                type="text"
-              />
-              <button className="h-full absolute right-0 bg-indigo-500 text-white uppercase px-4 font-bold text-sm">
-                Subscribe
-              </button>
+
+            <div className="col-span-2 lg:col-span-4 md:col-span-6 sm:col-span-12">
+              <h2 className="text-[15px] font-semibold tracking-wide text-[#111827] uppercase">
+                Quick Links
+              </h2>
+              <ul className="mt-4 space-y-2.5 text-sm">
+                {quickLinks.map((item) => (
+                  <li key={item.label}>
+                    <Link
+                      to={item.path}
+                      className="text-slate-600 hover:text-[#f97316] transition-colors"
+                    >
+                      {item.label}
+                    </Link>
+                  </li>
+                ))}
+              </ul>
             </div>
-            <ul className="flex justify-start items-center gap-3">
-              <li>
-                <a
-                  className="w-[38px] h-[38px] hover:bg-[#7fad39] hover:text-white flex justify-center items-center bg-white rounded-full"
-                  href="#"
-                >
-                  <FaFacebookF />
-                </a>
-              </li>
-              <li>
-                <a
-                  className="w-[38px] h-[38px] hover:bg-[#7fad39] hover:text-white flex justify-center items-center bg-white rounded-full"
-                  href="#"
-                >
-                  <AiOutlineTwitter />
-                </a>
-              </li>
-              <li>
-                <a
-                  className="w-[38px] h-[38px] hover:bg-[#7fad39] hover:text-white flex justify-center items-center bg-white rounded-full"
-                  href="#"
-                >
-                  <FaLinkedin />
-                </a>
-              </li>
-              <li>
-                <a
-                  className="w-[38px] h-[38px] hover:bg-[#7fad39] hover:text-white flex justify-center items-center bg-white rounded-full"
-                  href="#"
-                >
-                  <AiFillGithub />
-                </a>
-              </li>
-            </ul>
+
+            <div className="col-span-2 lg:col-span-4 md:col-span-6 sm:col-span-12">
+              <h2 className="text-[15px] font-semibold tracking-wide text-[#111827] uppercase">
+                Support
+              </h2>
+              <ul className="mt-4 space-y-2.5 text-sm">
+                {supportLinks.map((item) => (
+                  <li key={item.label}>
+                    <Link
+                      to={item.path}
+                      className="text-slate-600 hover:text-[#f97316] transition-colors"
+                    >
+                      {item.label}
+                    </Link>
+                  </li>
+                ))}
+              </ul>
+            </div>
+
+            <div className="col-span-3 lg:col-span-4 md:col-span-12">
+              <h2 className="text-[15px] font-semibold tracking-wide text-[#111827] uppercase">
+                Newsletter
+              </h2>
+              <p className="text-sm text-slate-600 mt-3">
+                Offers, new arrivals and festive deals straight to your inbox.
+              </p>
+
+              <div className="mt-4 rounded-xl border border-[#f3d8c9] bg-white overflow-hidden">
+                <div className="flex items-center h-[46px]">
+                  <input
+                    placeholder="Enter your email"
+                    className="h-full w-full bg-transparent px-3 text-sm text-slate-700 placeholder:text-slate-400 outline-none"
+                    type="email"
+                  />
+                  <button className="h-full px-4 bg-[#f97316] text-white text-xs font-bold uppercase hover:bg-[#ea580c] transition-colors">
+                    Join
+                  </button>
+                </div>
+              </div>
+
+              <ul className="flex items-center gap-2 mt-4">
+                {socialLinks.map((item) => (
+                  <li key={item.label}>
+                    <a
+                      className="w-[34px] h-[34px] rounded-full bg-[#fff1e8] text-[#f97316] hover:bg-[#111827] hover:text-white flex justify-center items-center transition-all"
+                      href={item.href}
+                      target="_blank"
+                      rel="noreferrer"
+                      aria-label={item.label}
+                    >
+                      {item.icon}
+                    </a>
+                  </li>
+                ))}
+              </ul>
+            </div>
           </div>
         </div>
-      </div>
-      <div className="w-full flex flex-wrap justify-center items-center text-slate-700 mx-auto py-5 text-center">
-        <span>
-          Copyright ©{new Date().getFullYear()} All rights reserved | made by{" "}
-          <a className="text-blue-500 underline" href="">
-            @myhaat
-          </a>
-        </span>
       </div>
 
-      <div className="hidden fixed md-lg:block w-[50px] bottom-3 h-[110px] right-2 bg-white rounded-full p-2">
+      <div className="bg-[#111827]">
+        <div className="max-w-[1440px] mx-auto px-16 sm:px-5 md-lg:px-12 md:px-10 py-5 flex items-center justify-between md:flex-col md:gap-2 md:text-center">
+          <span className="text-sm text-white/90">
+            Copyright ©{new Date().getFullYear()} shopp.my | All rights reserved
+          </span>
+          <span className="text-xs text-slate-300">
+            Secure checkout | Fast shipping | Trusted by happy shoppers
+          </span>
+        </div>
+      </div>
+
+      <div className="hidden fixed md-lg:block w-[54px] bottom-3 h-[116px] right-2 rounded-full p-2 bg-white border border-[#f3d8c9] shadow-[0_12px_28px_rgba(15,23,42,0.2)] z-[99997]">
         <div className="w-full h-full flex gap-3 flex-col justify-center items-center">
           <div
             onClick={() => navigate(userInfo ? "/card" : "/login")}
-            className="relative flex justify-center items-center cursor-pointer w-[35px] h-[35px] rounded-full bg-[#e2e2e2]"
+            className="relative flex justify-center items-center cursor-pointer w-[35px] h-[35px] rounded-full bg-[#fff1e8]"
           >
-            <span className="text-xl text-orange-500">
+            <span className="text-xl text-[#f97316]">
               <AiFillShopping />
             </span>
             {card_product_count !== 0 && (
-              <div className="w-[20px] h-[20px] absolute bg-green-500 rounded-full text-white flex justify-center items-center -top-[3px] -right-[5px]">
+              <div className="w-[18px] h-[18px] absolute bg-[#f97316] rounded-full text-white text-[10px] flex justify-center items-center -top-[2px] -right-[4px]">
                 {card_product_count}
               </div>
             )}
           </div>
+
           <div
             onClick={() =>
               navigate(userInfo ? "/dashboard/my-wishlist" : "/login")
             }
-            className="relative flex justify-center items-center cursor-pointer w-[35px] h-[35px] rounded-full bg-[#e2e2e2]"
+            className="relative flex justify-center items-center cursor-pointer w-[35px] h-[35px] rounded-full bg-[#fff1e8]"
           >
-            <span className="text-xl text-red-500">
+            <span className="text-xl text-[#f43f5e]">
               <AiFillHeart />
             </span>
             {wishlist_count !== 0 && (
-              <div className="w-[20px] h-[20px] absolute bg-green-500 rounded-full text-white flex justify-center items-center -top-[3px] -right-[5px]">
+              <div className="w-[18px] h-[18px] absolute bg-[#f97316] rounded-full text-white text-[10px] flex justify-center items-center -top-[2px] -right-[4px]">
                 {wishlist_count}
               </div>
             )}

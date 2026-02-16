@@ -18,7 +18,7 @@ const ConfirmOrder = () => {
           `${api_url}/api/home/customer/gat-order/${orderId}`,
           {
             headers: {
-              authorization: `Bearer ${localStorage.getItem("token")}`,
+              authorization: `Bearer ${localStorage.getItem("customerToken")}`,
             },
           },
         );

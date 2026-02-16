@@ -23,9 +23,23 @@ const Home = () => {
             <div className='py-[45px] max-w-[1440px] mx-auto px-16 sm:px-5 md-lg:px-12 md:px-10'>
                 <FeatureProducts products={products} />
             </div>
-            <div className='py-10'>
-                <div className='max-w-[1440px] mx-auto px-16 sm:px-5 md-lg:px-12 md:px-10 flex flex-wrap'>
-                    <div className="grid w-full grid-cols-3 md-lg:grid-cols-2 md:grid-cols-1 gap-7">
+            <section className='py-12 bg-gradient-to-b from-[#fff9f4] to-white border-y border-[#f3e3d8]'>
+                <div className='max-w-[1440px] mx-auto px-16 sm:px-5 md-lg:px-12 md:px-10'>
+                    <div className='mb-7 flex items-end justify-between md:flex-col md:items-start md:gap-2'>
+                        <div>
+                            <span className='inline-flex items-center px-3 py-1 rounded-full border border-[#f7d9c8] bg-[#fff3ea] text-[11px] font-semibold uppercase tracking-wider text-[#c2410c]'>
+                                Curated Collections
+                            </span>
+                            <h2 className='text-3xl md:text-2xl font-bold text-slate-800 mt-3'>
+                                Latest, Top Rated & Discount Picks
+                            </h2>
+                        </div>
+                        <p className='text-sm text-slate-500 max-w-[360px] md:max-w-full'>
+                            Explore new arrivals, best loved products and trending offers in one place.
+                        </p>
+                    </div>
+
+                    <div className="grid w-full grid-cols-3 md-lg:grid-cols-2 md:grid-cols-1 gap-6">
                         <div className='overflow-hidden'>
                             <Products title='Latest Product' products={latest_product} />
                         </div>
@@ -37,7 +51,7 @@ const Home = () => {
                         </div>
                     </div>
                 </div>
-            </div>
+            </section>
             <Footer />
         </div>
     )

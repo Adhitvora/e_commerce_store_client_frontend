@@ -1,151 +1,284 @@
-import React, { useEffect, useState } from 'react'
-import { Link, useNavigate } from 'react-router-dom'
-import { useSelector, useDispatch } from 'react-redux'
-import { get_orders } from '../../store/reducers/orderReducer'
-import axios from 'axios'
-import { api_url } from '../../utils/config'
+import React, { useEffect, useState } from "react";
+import { Link, useNavigate } from "react-router-dom";
+import { useSelector, useDispatch } from "react-redux";
+import { AiOutlineShoppingCart, AiOutlineEye } from "react-icons/ai";
+import { FiCopy } from "react-icons/fi";
+import { get_orders } from "../../store/reducers/orderReducer";
+import axios from "axios";
+import { api_url } from "../../utils/config";
+import { BsCreditCard } from "react-icons/bs";
 
 const Orders = () => {
+  const navigate = useNavigate();
+  const dispatch = useDispatch();
+  const { userInfo } = useSelector((state) => state.auth);
+  const { myOrders } = useSelector((state) => state.order);
+  const [state, setState] = useState("all");
+  const [payingOrderId, setPayingOrderId] = useState("");
+  const userId = userInfo?.id;
 
-    const navigate = useNavigate()
-    const dispatch = useDispatch()
-    const { userInfo } = useSelector(state => state.auth)
-    const { myOrders } = useSelector(state => state.order)
-    const [state, setState] = useState('all')
-    const [payingOrderId, setPayingOrderId] = useState('')
+  useEffect(() => {
+    if (!userId) return;
+    dispatch(get_orders({ status: state, customerId: userId }));
+  }, [state, dispatch, userId]);
 
+  const payNow = async (ord) => {
+    if (payingOrderId) return;
 
-    useEffect(() => {
-        dispatch(get_orders({ status: state, customerId: userInfo.id }))
-    }, [state, dispatch, userInfo.id])
+    try {
+      setPayingOrderId(ord._id);
 
-    const payNow = async (ord) => {
-        if (payingOrderId) return
+      const { data } = await axios.post(
+        `${api_url}/api/order/create-payment`,
+        { orderId: ord._id },
+        { withCredentials: true },
+      );
 
-        try {
-            setPayingOrderId(ord._id)
-
-            const { data } = await axios.post(
-                `${api_url}/api/order/create-payment`,
-                { orderId: ord._id },
-                { withCredentials: true }
-            )
-
-            if (!data?.razorpayOrder) {
-                if (data?.message === 'Order already paid') {
-                    navigate(`/order/success/${ord._id}`)
-                }
-                setPayingOrderId('')
-                return
-            }
-
-            const options = {
-                key: process.env.REACT_APP_RAZORPAY_KEY,
-                amount: data.razorpayOrder.amount,
-                currency: 'INR',
-                name: 'Your Store Name',
-                description: 'Order Payment',
-                order_id: data.razorpayOrder.id,
-                handler: async function (response) {
-                    try {
-                        await axios.post(
-                            `${api_url}/api/order/verify-payment`,
-                            {
-                                orderId: data.orderId || ord._id,
-                                razorpay_order_id: response.razorpay_order_id,
-                                razorpay_payment_id: response.razorpay_payment_id,
-                                razorpay_signature: response.razorpay_signature
-                            },
-                            { withCredentials: true }
-                        )
-
-                        setPayingOrderId('')
-                        navigate(`/order/success/${data.orderId || ord._id}`)
-                    } catch (error) {
-                        setPayingOrderId('')
-                        console.log('verify payment error:', error.response?.data || error)
-                        alert('Payment ho gaya, lekin verification fail hua. Please retry.')
-                    }
-                },
-                modal: {
-                    ondismiss: function () {
-                        setPayingOrderId('')
-                    }
-                },
-                theme: {
-                    color: '#7fad39'
-                }
-            }
-
-            const rzp = new window.Razorpay(options)
-            rzp.on('payment.failed', function () {
-                setPayingOrderId('')
-            })
-            rzp.open()
-        } catch (error) {
-            setPayingOrderId('')
-            console.log(error.response?.data || error)
-            alert('Payment open nahi ho paya. Please try again.')
+      if (!data?.razorpayOrder) {
+        if (data?.message === "Order already paid") {
+          navigate(`/order/success/${ord._id}`);
         }
+        setPayingOrderId("");
+        return;
+      }
+
+      const options = {
+        key: process.env.REACT_APP_RAZORPAY_KEY,
+        amount: data.razorpayOrder.amount,
+        currency: "INR",
+        name: "Your Store Name",
+        description: "Order Payment",
+        order_id: data.razorpayOrder.id,
+        handler: async function (response) {
+          try {
+            await axios.post(
+              `${api_url}/api/order/verify-payment`,
+              {
+                orderId: data.orderId || ord._id,
+                razorpay_order_id: response.razorpay_order_id,
+                razorpay_payment_id: response.razorpay_payment_id,
+                razorpay_signature: response.razorpay_signature,
+              },
+              { withCredentials: true },
+            );
+
+            setPayingOrderId("");
+            navigate(`/order/success/${data.orderId || ord._id}`);
+          } catch (error) {
+            setPayingOrderId("");
+            console.log("verify payment error:", error.response?.data || error);
+            alert(
+              "Payment ho gaya, lekin verification fail hua. Please retry.",
+            );
+          }
+        },
+        modal: {
+          ondismiss: function () {
+            setPayingOrderId("");
+          },
+        },
+        theme: {
+          color: "#7fad39",
+        },
+      };
+
+      const rzp = new window.Razorpay(options);
+      rzp.on("payment.failed", function () {
+        setPayingOrderId("");
+      });
+      rzp.open();
+    } catch (error) {
+      setPayingOrderId("");
+      console.log(error.response?.data || error);
+      alert("Payment open nahi ho paya. Please try again.");
     }
+  };
 
-    return (
-        <div className='bg-white p-4 rounded-md'>
-            <div className='flex justify-between items-center'>
-                <h2 className='text-xl font-semibold text-slate-600'>My Orders</h2>
-                <select className='outline-none px-3 py-1 border rounded-md text-slate-600' value={state} onChange={(e) => setState(e.target.value)}>
-                    <option value="all">--order status---</option>
-                    <option value="placed">Placed</option>
-                    <option value="pending">Pending</option>
-                    <option value="cancelled">Cancelled</option>
-                    <option value="warehouse">Warehouse</option>
-                </select>
-            </div>
-            <div className='pt-4'>
-                <div className='relative overflow-x-auto'>
-                    <table className='w-full text-sm text-left text-gray-500'>
-                        <thead className='text-xs text-gray-700 uppercase bg-gray-50'>
-                            <tr>
-                                <th scope='col' className='px-6 py-3'>Order Id</th>
-                                <th scope='col' className='px-6 py-3'>Price</th>
-                                <th scope='col' className='px-6 py-3'>Payment status</th>
-                                <th scope='col' className='px-6 py-3'>Order status</th>
-                                <th scope='col' className='px-6 py-3'>Action</th>
-                            </tr>
-                        </thead>
-                        <tbody>
+  return (
+    <div className="pt-4">
+      <div
+        className="bg-white rounded-2xl shadow-sm border overflow-hidden"
+        style={{ borderColor: "#E4F0F5" }}
+      >
+        <div className="overflow-x-auto">
+          <table className="w-full min-w-[900px]">
+            {/* ===== HEADER ===== */}
+            <thead>
+              <tr
+                className="text-xs uppercase tracking-wider"
+                style={{
+                  backgroundColor: "#FCF6E3",
+                  color: "#122C55",
+                }}
+              >
+                <th className="px-6 py-5 text-left">Order</th>
+                <th className="px-6 py-5 text-left">Price</th>
+                <th className="px-6 py-5 text-left">Payment</th>
+                <th className="px-6 py-5 text-left">Delivery</th>
+                <th className="px-6 py-5 text-left">Date</th>
+                <th className="px-6 py-5 text-right">Actions</th>
+              </tr>
+            </thead>
 
+            {/* ===== BODY ===== */}
+            <tbody>
+              {myOrders.map((o, i) => {
+                const product = o.products?.[0];
 
-                            {
-                                myOrders.map((o, i) => <tr key={i} className='bg-white border-b'>
-                                    <td scope='row' className='px-6 py-4 font-medium whitespace-nowrap'>{o._id}</td>
-                                    <td scope='row' className='px-6 py-4 font-medium whitespace-nowrap'>₹{o.price}</td>
-                                    <td scope='row' className='px-6 py-4 font-medium whitespace-nowrap'>{o.payment_status}</td>
-                                    <td scope='row' className='px-6 py-4 font-medium whitespace-nowrap'>{o.delivery_status}</td>
-                                    <td scope='row' className='px-6 py-4'>
-                                        <Link to={`/dashboard/order/details/${o._id}`}>
-                                            <span className='bg-green-100 text-green-800 text-sm font-normal mr-2 px-2.5 py-[1px] rounded'>view</span>
-                                        </Link>
-                                        {
-                                            o.payment_status !== 'paid' && (
-                                                <span
-                                                    onClick={() => payingOrderId ? null : payNow(o)}
-                                                    className={`text-sm font-normal mr-2 px-2.5 py-[1px] rounded ${payingOrderId === o._id ? 'bg-gray-100 text-gray-500 cursor-not-allowed' : 'bg-green-100 text-green-800 cursor-pointer'}`}
-                                                >
-                                                    {payingOrderId === o._id ? 'Opening...' : 'Pay Now'}
-                                                </span>
-                                            )
-                                        }
-                                    </td>
-                                </tr>)
-                            }
+                return (
+                  <tr
+                    key={i}
+                    onClick={() =>
+                      navigate(`/dashboard/order/details/${o._id}`)
+                    }
+                    className="border-b transition duration-200 hover:bg-[#FCF6E3]"
+                    style={{ borderColor: "#E4F0F5" }}
+                  >
+                    {/* ORDER COLUMN (Image + ID + Name) */}
+                    <td className="px-6 py-6">
+                      <div className="flex items-start gap-4">
+                        {/* IMAGE */}
+                        <div
+                          className="w-16 h-16 rounded-xl overflow-hidden border bg-[#FCF6E3] flex-shrink-0"
+                          style={{ borderColor: "#E4F0F5" }}
+                        >
+                          <img
+                            src={product?.images?.[0]}
+                            alt={product?.name}
+                            className="w-full h-full object-cover object-top"
+                          />
+                        </div>
 
-                        </tbody>
-                    </table>
-                </div>
-            </div>
+                        {/* TEXT */}
+                        <div className="flex flex-col gap-2">
+                          {/* ORDER ID + COPY */}
+                          <div className="flex items-center gap-2">
+                            <span
+                              className="text-sm font-semibold px-3 py-1 rounded-lg bg-[#FCF6E3]"
+                              style={{ color: "#122C55" }}
+                            >
+                              #{o._id}
+                            </span>
+
+                            <button
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                navigator.clipboard.writeText(o._id);
+                              }}
+                            >
+                              <FiCopy />
+                            </button>
+                          </div>
+
+                          {/* PRODUCT NAME */}
+                          <p
+                            className="text-sm font-medium max-w-[250px] truncate"
+                            style={{ color: "#122C55" }}
+                          >
+                            {product?.name}
+                          </p>
+                        </div>
+                      </div>
+                    </td>
+
+                    {/* PRICE */}
+                    <td className="px-6 py-6">
+                      <span
+                        className="text-lg font-bold"
+                        style={{ color: "#122C55" }}
+                      >
+                        ₹{o.price}
+                      </span>
+                    </td>
+
+                    {/* PAYMENT */}
+                    <td className="px-6 py-6">
+                      <span
+                        className="px-3 py-1.5 rounded-full text-xs font-semibold"
+                        style={{
+                          backgroundColor:
+                            o.payment_status === "paid" ? "#E6F4EA" : "#FFF4E5",
+                          color:
+                            o.payment_status === "paid" ? "#2E8B57" : "#F38E16",
+                        }}
+                      >
+                        {o.payment_status.toUpperCase()}
+                      </span>
+                    </td>
+
+                    {/* DELIVERY */}
+                    <td className="px-6 py-6">
+                      <span
+                        className="px-3 py-1.5 rounded-full text-xs font-semibold"
+                        style={{
+                          backgroundColor:
+                            o.delivery_status === "cancelled"
+                              ? "#FDE8EA"
+                              : o.delivery_status === "pending"
+                                ? "#FFF4E5"
+                                : "#E4F0F5",
+                          color:
+                            o.delivery_status === "cancelled"
+                              ? "#CC4255"
+                              : o.delivery_status === "pending"
+                                ? "#F38E16"
+                                : "#122C55",
+                        }}
+                      >
+                        {o.delivery_status.toUpperCase()}
+                      </span>
+                    </td>
+
+                    {/* DATE */}
+                    <td className="px-6 py-6">
+                      <span className="text-xs" style={{ color: "#A6BFCC" }}>
+                        {o.date}
+                      </span>
+                    </td>
+
+                    {/* ACTIONS */}
+                    <td className="px-6 py-6 text-right">
+                      <div className="flex justify-end items-center gap-3">
+                        {o.payment_status !== "paid" && (
+                          <button
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              if (!payingOrderId) payNow(o);
+                            }}
+                            disabled={payingOrderId === o._id}
+                            className="w-10 h-10 flex items-center justify-center rounded-xl transition"
+                            style={{
+                              backgroundColor:
+                                payingOrderId === o._id ? "#E4F0F5" : "#F38E16",
+                              color:
+                                payingOrderId === o._id ? "#A6BFCC" : "#ffffff",
+                            }}
+                          >
+                            {payingOrderId === o._id ? "…" : <BsCreditCard />}
+                          </button>
+                        )}
+
+                        <Link
+                          to={`/dashboard/order/details/${o._id}`}
+                          className="w-10 h-10 flex items-center justify-center rounded-xl border transition hover:bg-[#E4F0F5]"
+                          style={{
+                            borderColor: "#E4F0F5",
+                            color: "#122C55",
+                          }}
+                        >
+                          <AiOutlineEye />
+                        </Link>
+                      </div>
+                    </td>
+                  </tr>
+                );
+              })}
+            </tbody>
+          </table>
         </div>
-    )
-}
+      </div>
+    </div>
+  );
+};
 
-export default Orders
+export default Orders;

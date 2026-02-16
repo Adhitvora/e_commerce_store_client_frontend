@@ -22,22 +22,26 @@ const Chat = () => {
     const [activeSeller, setActiveSeller] = useState([])
     const { userInfo } = useSelector(state => state.auth)
     const { fd_messages, currentFd, my_friends, successMessage } = useSelector(state => state.chat)
+    const userId = userInfo?.id
 
     useEffect(() => {
-        socket.emit('add_user', userInfo.id, userInfo)
-    }, [])
+        if (!userId) return
+        socket.emit('add_user', userId, userInfo)
+    }, [userId, userInfo])
 
     useEffect(() => {
+        if (!userId) return
         dispatch(add_friend({
             sellerId: sellerId || "",
-            userId: userInfo.id
+            userId
         }))
-    }, [sellerId])
+    }, [dispatch, sellerId, userId])
 
     const send = () => {
+        if (!userId) return
         if (text) {
             dispatch(send_message({
-                userId: userInfo.id,
+                userId,
                 text,
                 sellerId,
                 name: userInfo.name
@@ -65,15 +69,16 @@ const Chat = () => {
 
     useEffect(() => {
         console.log(receverMessage)
+        if (!userId) return
         if (receverMessage) {
-            if (sellerId === receverMessage.senderId && userInfo.id === receverMessage.receverId) {
+            if (sellerId === receverMessage.senderId && userId === receverMessage.receverId) {
                 dispatch(updateMessage(receverMessage))
             } else {
                 toast.success(receverMessage.senderName + " " + "send a message")
                 dispatch(messageClear())
             }
         }
-    }, [receverMessage])
+    }, [dispatch, receverMessage, sellerId, userId])
 
     useEffect(() => {
         scrollRef.current?.scrollIntoView({ behavior: 'smooth' })

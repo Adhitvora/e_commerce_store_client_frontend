@@ -1,24 +1,89 @@
-import React from 'react'
+import React from "react";
 
 const ChangePassword = () => {
   return (
-    <div className='p-4 bg-white'>
-        <h2 className='text-xl text-slate-600 pb-5'>Chage Password</h2>
-        <form>
-            <div className='flex flex-col gap-1 mb-2'>
-                <label htmlFor="old_password">Old Password</label>
-                <input type="password" id='old_password' name='old_password' placeholder='old password' className='outline-none px-3 py-1 border rounded-md text-slate-600' />
-            </div>
-            <div className='flex flex-col gap-1 mb-2'>
-                <label htmlFor="new_password">New Password</label>
-                <input type="password" id='new_password' name='new_password' placeholder='new password' className='outline-none px-3 py-1 border rounded-md text-slate-600' />
-            </div>
-            <div>
-                <button className='px-8 py-2 bg-purple-500 shadow-lg hover:shadow-purple-500/30 text-white rounded-md'>Update</button>
-            </div>
-        </form>
-    </div>
-  )
-}
+    <div className="flex justify-center items-start py-10">
+      <div
+        className="w-full max-w-md bg-white rounded-2xl shadow-sm border p-8"
+        style={{ borderColor: "#E4F0F5" }}
+      >
+        {/* HEADER */}
+        <div className="mb-8">
+          <h2 className="text-xl font-semibold" style={{ color: "#122C55" }}>
+            Change Password
+          </h2>
+          <p className="text-sm mt-1" style={{ color: "#A6BFCC" }}>
+            Update your account password securely.
+          </p>
+        </div>
 
-export default ChangePassword
+        {/* FORM */}
+        <form className="space-y-6">
+          {/* OLD PASSWORD */}
+          <div className="flex flex-col gap-2">
+            <label
+              htmlFor="old_password"
+              className="text-sm font-medium"
+              style={{ color: "#122C55" }}
+            >
+              Old Password
+            </label>
+
+            <input
+              type="password"
+              id="old_password"
+              name="old_password"
+              placeholder="Enter old password"
+              className="px-4 py-2.5 rounded-lg border outline-none transition focus:ring-2"
+              style={{
+                borderColor: "#E4F0F5",
+              }}
+            />
+          </div>
+
+          {/* NEW PASSWORD */}
+          <div className="flex flex-col gap-2">
+            <label
+              htmlFor="new_password"
+              className="text-sm font-medium"
+              style={{ color: "#122C55" }}
+            >
+              New Password
+            </label>
+
+            <input
+              type="password"
+              id="new_password"
+              name="new_password"
+              placeholder="Enter new password"
+              className="px-4 py-2.5 rounded-lg border outline-none transition focus:ring-2"
+              style={{
+                borderColor: "#E4F0F5",
+              }}
+            />
+
+            <p className="text-xs" style={{ color: "#A6BFCC" }}>
+              Use at least 8 characters with a mix of letters & numbers.
+            </p>
+          </div>
+
+          {/* SUBMIT BUTTON */}
+          <div>
+            <button
+              type="submit"
+              className="w-full py-3 rounded-xl font-medium transition"
+              style={{
+                backgroundColor: "#F38E16",
+                color: "#ffffff",
+              }}
+            >
+              Update Password
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  );
+};
+
+export default ChangePassword;

@@ -1,108 +1,358 @@
-import React, { useEffect } from 'react'
-import { AiOutlineShoppingCart } from 'react-icons/ai'
-import { useSelector, useDispatch } from 'react-redux'
-import { Link, redirect, useNavigate } from 'react-router-dom'
-import { get_dashboard_index_data } from '../../store/reducers/dashboardReducer'
+import React, { useEffect, useState } from "react";
+import { AiOutlineShoppingCart, AiOutlineEye } from "react-icons/ai";
+import { BsCreditCard } from "react-icons/bs";
+import { useSelector, useDispatch } from "react-redux";
+import { Link, useNavigate } from "react-router-dom";
+import { get_dashboard_index_data } from "../../store/reducers/dashboardReducer";
+import axios from "axios";
+import { api_url } from "../../utils/config";
+import { FiClock } from "react-icons/fi";
+import { IoCloseOutline } from "react-icons/io5";
+import { FiCopy } from "react-icons/fi";
+
 const Index = () => {
+  const navigate = useNavigate();
+  const { userInfo } = useSelector((state) => state.auth);
+  const { totalOrder, pendingOrder, recentOrders, cancelledOrder } =
+    useSelector((state) => state.dashboard);
+  const [payingOrderId, setPayingOrderId] = useState("");
+  const userId = userInfo?.id;
+  const dispatch = useDispatch();
 
-    const navigate = useNavigate()
-    const { userInfo } = useSelector(state => state.auth)
-    const { totalOrder, pendingOrder, recentOrders, cancelledOrder } = useSelector(state => state.dashboard)
+  useEffect(() => {
+    if (!userId) return;
+    dispatch(get_dashboard_index_data(userId));
+  }, [dispatch, userId]);
 
-    const dispatch = useDispatch()
+  const payNow = async (ord) => {
+    if (payingOrderId) return;
+    try {
+      setPayingOrderId(ord._id);
 
-    useEffect(() => {
-        dispatch(get_dashboard_index_data(userInfo.id))
-    }, [])
-    const redirect = (ord) => {
-        let items = 0;
-        for (let i = 0; i < ord.length; i++) {
-            items = ord.products[i].quantity + items
+      const { data } = await axios.post(
+        `${api_url}/api/order/create-payment`,
+        { orderId: ord._id },
+        { withCredentials: true },
+      );
+
+      if (!data?.razorpayOrder) {
+        if (data?.message === "Order already paid") {
+          navigate(`/order/success/${ord._id}`);
         }
-        navigate('/payment', {
-            state: {
-                price: ord.price,
-                items,
-                orderId: ord._id
-            }
-        })
+        setPayingOrderId("");
+        return;
+      }
+
+      const options = {
+        key: process.env.REACT_APP_RAZORPAY_KEY,
+        amount: data.razorpayOrder.amount,
+        currency: "INR",
+        name: "Your Store Name",
+        description: "Order Payment",
+        order_id: data.razorpayOrder.id,
+        handler: async function (response) {
+          try {
+            await axios.post(
+              `${api_url}/api/order/verify-payment`,
+              {
+                orderId: data.orderId || ord._id,
+                razorpay_order_id: response.razorpay_order_id,
+                razorpay_payment_id: response.razorpay_payment_id,
+                razorpay_signature: response.razorpay_signature,
+              },
+              { withCredentials: true },
+            );
+            setPayingOrderId("");
+            navigate(`/order/success/${data.orderId || ord._id}`);
+          } catch {
+            setPayingOrderId("");
+            alert("Payment verification failed. Please retry.");
+          }
+        },
+        modal: {
+          ondismiss: function () {
+            setPayingOrderId("");
+          },
+        },
+        theme: {
+          color: "#F38E16",
+        },
+      };
+
+      const rzp = new window.Razorpay(options);
+      rzp.on("payment.failed", function () {
+        setPayingOrderId("");
+      });
+      rzp.open();
+    } catch {
+      setPayingOrderId("");
+      alert("Payment open failed. Please try again.");
     }
-    return (
-        <div>
-            <div className='grid grid-cols-3 md:grid-cols-1 gap-5'>
-                <div className='flex justify-center items-center p-5 bg-white rounded-md gap-5'>
-                    <div className='bg-green-100 w-[47px] h-[47px] rounded-full flex justify-center items-center text-xl '>
-                        <span className='text-xl text-green-800'>
-                            <AiOutlineShoppingCart />
-                        </span>
-                    </div>
-                    <div className='flex flex-col justify-start items-start text-slate-600'>
-                        <h2 className='text-3xl font-bold'>{totalOrder}</h2>
-                        <span>Orders</span>
-                    </div>
-                </div>
-                <div className='flex justify-center items-center p-5 bg-white rounded-md gap-5'>
-                    <div className='bg-blue-100 w-[47px] h-[47px] rounded-full flex justify-center items-center text-xl '>
-                        <span className='text-xl text-blue-800'>
-                            <AiOutlineShoppingCart />
-                        </span>
-                    </div>
-                    <div className='flex flex-col justify-start items-start text-slate-600'>
-                        <h2 className='text-3xl font-bold'>{pendingOrder}</h2>
-                        <span>Pending Orders</span>
-                    </div>
-                </div>
-                <div className='flex justify-center items-center p-5 bg-white rounded-md gap-5'>
-                    <div className='bg-red-100 w-[47px] h-[47px] rounded-full flex justify-center items-center text-xl '>
-                        <span className='text-xl text-red-800'>
-                            <AiOutlineShoppingCart />
-                        </span>
-                    </div>
-                    <div className='flex flex-col justify-start items-start text-slate-600'>
-                        <h2 className='text-3xl font-bold'>{cancelledOrder}</h2>
-                        <span>Cancelled Orders</span>
-                    </div>
-                </div>
-            </div>
-            <div className='bg-white p-4 mt-5 rounded-md'>
-                <h2 className='text-lg font-semibold text-slate-600'>Recent Orders</h2>
-                <div className='pt-4'>
-                    <div className='relative overflow-x-auto'>
-                        <table className='w-full text-sm text-left text-gray-500'>
-                            <thead className='text-xs text-gray-700 uppercase bg-gray-50'>
-                                <tr>
-                                    <th scope='col' className='px-6 py-3'>Order Id</th>
-                                    <th scope='col' className='px-6 py-3'>Price</th>
-                                    <th scope='col' className='px-6 py-3'>Payment status</th>
-                                    <th scope='col' className='px-6 py-3'>Order status</th>
-                                    <th scope='col' className='px-6 py-3'>Action</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                {
-                                    recentOrders.map((o, i) => <tr key={i} className='bg-white border-b'>
-                                        <td scope='row' className='px-6 py-4 font-medium whitespace-nowrap'>{o._id}</td>
-                                        <td scope='row' className='px-6 py-4 font-medium whitespace-nowrap'>₹{o.price}</td>
-                                        <td scope='row' className='px-6 py-4 font-medium whitespace-nowrap'>{o.payment_status}</td>
-                                        <td scope='row' className='px-6 py-4 font-medium whitespace-nowrap'>{o.delivery_status}</td>
-                                        <td scope='row' className='px-6 py-4'>
-                                            <Link to={`/dashboard/order/details/${o._id}`}>
-                                                <span className='bg-green-100 text-green-800 text-sm font-normal mr-2 px-2.5 py-[1px] rounded'>view</span>
-                                            </Link>
-                                            {
-                                                o.payment_status !== 'paid' && <span onClick={() => redirect(o)} className='bg-green-100 text-green-800 text-sm font-normal mr-2 px-2.5 py-[1px] rounded cursor-pointer'>Pay Now</span>
-                                            }
-                                        </td>
-                                    </tr>)
-                                }
+  };
+  return (
+    <div className="space-y-10">
+      {/* ================= SIGNAL COLOR STATS ================= */}
+      <div className="grid grid-cols-3 md:grid-cols-1 gap-6">
+        {/* TOTAL ORDERS */}
+        <div
+          className="relative bg-white rounded-2xl p-6 shadow-sm border overflow-hidden"
+          style={{ borderColor: "#E4F0F5" }}
+        >
+          <div
+            className="absolute top-0 left-0 w-2 h-full"
+            style={{ backgroundColor: "#F38E16" }}
+          />
 
-                            </tbody>
-                        </table>
-                    </div>
-                </div>
-            </div>
+          <p className="text-sm font-medium" style={{ color: "#A6BFCC" }}>
+            Total Orders
+          </p>
+
+          <h2 className="text-4xl font-bold mt-3" style={{ color: "#122C55" }}>
+            {totalOrder}
+          </h2>
+
+          <div
+            className="absolute right-6 top-6 opacity-10 text-6xl"
+            style={{ color: "#F38E16" }}
+          >
+            <AiOutlineShoppingCart />
+          </div>
         </div>
-    )
-}
 
-export default Index
+        {/* PENDING ORDERS */}
+        <div
+          className="relative bg-white rounded-2xl p-6 shadow-sm border overflow-hidden"
+          style={{ borderColor: "#E4F0F5" }}
+        >
+          <div
+            className="absolute top-0 left-0 w-2 h-full"
+            style={{ backgroundColor: "#2E8B57" }}
+          />
+
+          <p className="text-sm font-medium" style={{ color: "#A6BFCC" }}>
+            Pending Orders
+          </p>
+
+          <h2 className="text-4xl font-bold mt-3" style={{ color: "#2E8B57" }}>
+            {pendingOrder}
+          </h2>
+
+          <div
+            className="absolute right-6 top-6 opacity-10 text-6xl"
+            style={{ color: "#2E8B57" }}
+          >
+            <FiClock />
+          </div>
+        </div>
+
+        {/* CANCELLED ORDERS */}
+        <div
+          className="relative bg-white rounded-2xl p-6 shadow-sm border overflow-hidden"
+          style={{ borderColor: "#E4F0F5" }}
+        >
+          <div
+            className="absolute top-0 left-0 w-2 h-full"
+            style={{ backgroundColor: "#CC4255" }}
+          />
+
+          <p className="text-sm font-medium" style={{ color: "#A6BFCC" }}>
+            Cancelled Orders
+          </p>
+
+          <h2 className="text-4xl font-bold mt-3" style={{ color: "#CC4255" }}>
+            {cancelledOrder}
+          </h2>
+
+          <div
+            className="absolute right-6 top-6 opacity-10 text-6xl"
+            style={{ color: "#CC4255" }}
+          >
+            <IoCloseOutline />
+          </div>
+        </div>
+      </div>
+
+      {/* ================= TABLE SECTION ================= */}
+      <div
+        className="bg-white rounded-2xl shadow-sm border overflow-hidden"
+        style={{ borderColor: "#E4F0F5" }}
+      >
+        <div className="overflow-x-auto">
+          <table className="w-full min-w-[900px]">
+            {/* ================= HEADER ================= */}
+            <thead>
+              <tr
+                className="text-xs uppercase tracking-wider"
+                style={{
+                  backgroundColor: "#FCF6E3",
+                  color: "#122C55",
+                }}
+              >
+                <th className="px-6 py-5 text-left">Order</th>
+                <th className="px-6 py-5 text-left">Price</th>
+                <th className="px-6 py-5 text-left">Payment</th>
+                <th className="px-6 py-5 text-left">Delivery</th>
+                <th className="px-6 py-5 text-left">Date & Time</th>
+                <th className="px-6 py-5 text-right">Actions</th>
+              </tr>
+            </thead>
+
+            {/* ================= BODY ================= */}
+            <tbody>
+              {recentOrders.map((o, i) => {
+                const product = o.products?.[0];
+
+                return (
+                  <tr
+                    key={i}
+                    className="border-b transition duration-200 hover:bg-[#FCF6E3]"
+                    style={{ borderColor: "#E4F0F5" }}
+                  >
+                    {/* ORDER COLUMN */}
+                    <td className="px-6 py-6">
+                      <div className="flex items-start gap-4">
+                        {/* PRODUCT IMAGE */}
+                        <div
+                          className="w-16 h-16 rounded-xl overflow-hidden border bg-[#FCF6E3] flex-shrink-0"
+                          style={{ borderColor: "#E4F0F5" }}
+                        >
+                          <img
+                            src={product?.images?.[0]}
+                            alt={product?.name}
+                            className="w-full h-full object-cover object-top"
+                          />
+                        </div>
+
+                        {/* ORDER TEXT BLOCK */}
+                        <div className="flex flex-col gap-2">
+                          {/* ORDER ID + COPY */}
+                          <div className="flex items-center gap-2">
+                            <span
+                              className="text-sm font-semibold px-3 py-1 rounded-lg bg-[#FCF6E3]"
+                              style={{ color: "#122C55" }}
+                            >
+                             #{o._id}
+                            </span>
+
+                            <button
+                              onClick={() =>
+                                navigator.clipboard.writeText(o._id)
+                              }
+                              className="p-1.5 rounded-md transition hover:bg-[#E4F0F5]"
+                              title="Copy Order ID"
+                            >
+                              <FiCopy size={14} />
+                            </button>
+                          </div>
+
+                          {/* PRODUCT NAME */}
+                          <p
+                            className="text-sm font-medium max-w-[250px] truncate"
+                            style={{ color: "#122C55" }}
+                          >
+                            {product?.name}
+                          </p>
+                        </div>
+                      </div>
+                    </td>
+
+                    {/* PRICE */}
+                    <td className="px-6 py-6">
+                      <span
+                        className="text-lg font-bold"
+                        style={{ color: "#122C55" }}
+                      >
+                        ₹{o.price}
+                      </span>
+                    </td>
+
+                    {/* PAYMENT STATUS */}
+                    <td className="px-6 py-6">
+                      <span
+                        className="px-3 py-1.5 rounded-full text-xs font-semibold"
+                        style={{
+                          backgroundColor:
+                            o.payment_status === "paid" ? "#E6F4EA" : "#FFF4E5",
+                          color:
+                            o.payment_status === "paid" ? "#2E8B57" : "#F38E16",
+                        }}
+                      >
+                        {o.payment_status.toUpperCase()}
+                      </span>
+                    </td>
+
+                    {/* DELIVERY STATUS */}
+                    <td className="px-6 py-6">
+                      <span
+                        className="px-3 py-1.5 rounded-full text-xs font-semibold"
+                        style={{
+                          backgroundColor:
+                            o.delivery_status === "cancelled"
+                              ? "#FDE8EA"
+                              : o.delivery_status === "pending"
+                                ? "#FFF4E5"
+                                : "#E4F0F5",
+                          color:
+                            o.delivery_status === "cancelled"
+                              ? "#CC4255"
+                              : o.delivery_status === "pending"
+                                ? "#F38E16"
+                                : "#122C55",
+                        }}
+                      >
+                        {o.delivery_status.toUpperCase()}
+                      </span>
+                    </td>
+
+                    {/* DATE */}
+                    <td className="px-6 py-6">
+                      <span className="text-xs" style={{ color: "#A6BFCC" }}>
+                        {o.date}
+                      </span>
+                    </td>
+
+                    {/* ACTIONS */}
+                    <td className="px-6 py-6 text-right">
+                      <div className="flex justify-end items-center gap-3">
+                        {/* VIEW ICON */}
+                        <Link
+                          to={`/dashboard/order/details/${o._id}`}
+                          className="w-10 h-10 flex items-center justify-center rounded-xl border transition hover:bg-[#E4F0F5]"
+                          style={{
+                            borderColor: "#E4F0F5",
+                            color: "#122C55",
+                          }}
+                        >
+                          <AiOutlineEye size={18} />
+                        </Link>
+
+                        {/* PAY ICON */}
+                        {o.payment_status !== "paid" && (
+                          <button
+                            onClick={() => (payingOrderId ? null : payNow(o))}
+                            disabled={payingOrderId === o._id}
+                            className="w-10 h-10 flex items-center justify-center rounded-xl transition"
+                            style={{
+                              backgroundColor:
+                                payingOrderId === o._id ? "#E4F0F5" : "#F38E16",
+                              color:
+                                payingOrderId === o._id ? "#A6BFCC" : "#ffffff",
+                            }}
+                          >
+                            <BsCreditCard size={16} />
+                          </button>
+                        )}
+                      </div>
+                    </td>
+                  </tr>
+                );
+              })}
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  );
+};
+
+export default Index;
