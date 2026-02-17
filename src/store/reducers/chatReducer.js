@@ -1,23 +1,105 @@
-import {
-    createSlice,
-    createAsyncThunk
-} from '@reduxjs/toolkit'
+// import {
+//     createSlice,
+//     createAsyncThunk
+// } from '@reduxjs/toolkit'
+// import api from '../../api/api'
+
+// export const add_friend = createAsyncThunk(
+//     'chat/add_friend',
+//     async (info, { fulfillWithValue, rejectWithValue, getState }) => {
+//         const token = getState().auth.token
+//         const config = {
+//             headers: {
+//                 'authorization': `Bearer ${token}`
+//             }
+//         }
+//         try {
+//             const {
+//                 data
+//             } = await api.post('/chat/customer/add-customer-friend', info,config)
+//             console.log(data)
+//             return fulfillWithValue(data)
+//         } catch (error) {
+//             return rejectWithValue(error.response.data)
+//         }
+//     }
+// )
+
+// export const send_message = createAsyncThunk(
+//     'chat/send_message',
+//     async (info, { fulfillWithValue, rejectWithValue,getState }) => {
+//         const token = getState().auth.token
+//         const config = {
+//             headers: {
+//                 'authorization': `Bearer ${token}`
+//             }
+//         }
+//         try {
+//             const {
+//                 data
+//             } = await api.post('/chat/customer/send-message-to-seller', info,config)
+//             console.log(data)
+//             return fulfillWithValue(data)
+//         } catch (error) {
+//             return rejectWithValue(error.response.data)
+//         }
+//     }
+// )
+
+// export const chatReducer = createSlice({
+//     name: 'chat',
+//     initialState: {
+//         my_friends: [],
+//         fd_messages: [],
+//         currentFd: "",
+//         successMessage: "",
+//         errorMessage: ""
+//     },
+//     reducers: {
+//         messageClear: (state, _) => {
+//             state.errorMessage = ''
+//             state.successMessage = ''
+//         },
+//         updateMessage: (state, { payload }) => {
+//             state.fd_messages = [...state.fd_messages, payload]
+//         }
+//     },
+//     extraReducers: {
+//         [add_friend.fulfilled]: (state, { payload }) => {
+//             state.fd_messages = payload.messages
+//             state.currentFd = payload.currentFd
+//             state.my_friends = payload.myFriends
+//         },
+//         [send_message.fulfilled]: (state, { payload }) => {
+//             let tempFriends = state.my_friends
+//             let index = tempFriends.findIndex(f => f.fdId === payload.message.receverId)
+//             while (index > 0) {
+//                 let temp = tempFriends[index]
+//                 tempFriends[index] = tempFriends[index - 1]
+//                 tempFriends[index - 1] = temp
+//                 index--
+//             }
+//             state.my_friends = tempFriends
+//             state.fd_messages = [...state.fd_messages, payload.message]
+//             state.successMessage = ' message send success'
+//         }
+//     }
+// })
+
+// export const {
+//     messageClear,
+//     updateMessage
+// } = chatReducer.actions
+// export default chatReducer.reducer
+
+import { createSlice, createAsyncThunk } from '@reduxjs/toolkit'
 import api from '../../api/api'
 
-export const add_friend = createAsyncThunk(
-    'chat/add_friend',
-    async (info, { fulfillWithValue, rejectWithValue, getState }) => {
-        const token = getState().auth.token
-        const config = {
-            headers: {
-                'authorization': `Bearer ${token}`
-            }
-        }
+export const get_messages = createAsyncThunk(
+    'chat/get_messages',
+    async ({ userId, role }, { fulfillWithValue, rejectWithValue }) => {
         try {
-            const {
-                data
-            } = await api.post('/chat/customer/add-customer-friend', info,config)
-            console.log(data)
+            const { data } = await api.get(`/chat/get-messages/${role}/${userId}`)
             return fulfillWithValue(data)
         } catch (error) {
             return rejectWithValue(error.response.data)
@@ -27,18 +109,9 @@ export const add_friend = createAsyncThunk(
 
 export const send_message = createAsyncThunk(
     'chat/send_message',
-    async (info, { fulfillWithValue, rejectWithValue,getState }) => {
-        const token = getState().auth.token
-        const config = {
-            headers: {
-                'authorization': `Bearer ${token}`
-            }
-        }
+    async (info, { fulfillWithValue, rejectWithValue }) => {
         try {
-            const {
-                data
-            } = await api.post('/chat/customer/send-message-to-seller', info,config)
-            console.log(data)
+            const { data } = await api.post('/chat/send-message', info)
             return fulfillWithValue(data)
         } catch (error) {
             return rejectWithValue(error.response.data)
@@ -46,48 +119,33 @@ export const send_message = createAsyncThunk(
     }
 )
 
+
 export const chatReducer = createSlice({
     name: 'chat',
     initialState: {
-        my_friends: [],
-        fd_messages: [],
-        currentFd: "",
+        messages: [],
         successMessage: "",
         errorMessage: ""
     },
     reducers: {
-        messageClear: (state, _) => {
-            state.errorMessage = ''
-            state.successMessage = ''
+        messageClear: (state) => {
+            state.successMessage = ""
+            state.errorMessage = ""
         },
         updateMessage: (state, { payload }) => {
-            state.fd_messages = [...state.fd_messages, payload]
+            state.messages.push(payload)
         }
     },
     extraReducers: {
-        [add_friend.fulfilled]: (state, { payload }) => {
-            state.fd_messages = payload.messages
-            state.currentFd = payload.currentFd
-            state.my_friends = payload.myFriends
+        [get_messages.fulfilled]: (state, { payload }) => {
+            state.messages = payload.messages
         },
         [send_message.fulfilled]: (state, { payload }) => {
-            let tempFriends = state.my_friends
-            let index = tempFriends.findIndex(f => f.fdId === payload.message.receverId)
-            while (index > 0) {
-                let temp = tempFriends[index]
-                tempFriends[index] = tempFriends[index - 1]
-                tempFriends[index - 1] = temp
-                index--
-            }
-            state.my_friends = tempFriends
-            state.fd_messages = [...state.fd_messages, payload.message]
-            state.successMessage = ' message send success'
+            state.messages.push(payload.message)
+            state.successMessage = "sent"
         }
     }
 })
 
-export const {
-    messageClear,
-    updateMessage
-} = chatReducer.actions
+export const { messageClear, updateMessage } = chatReducer.actions
 export default chatReducer.reducer
