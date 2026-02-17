@@ -202,9 +202,8 @@ const Chat = () => {
   const { userInfo } = useSelector((state) => state.auth);
   const { messages, successMessage } = useSelector((state) => state.chat);
 
-
   const userId = userInfo?.id;
-  
+
   const [text, setText] = useState("");
 
   const ADMIN_ID = "6980480486aa781558164fb0";
@@ -272,18 +271,34 @@ const Chat = () => {
   }, [messages]);
 
   return (
-    <div className="bg-white p-4 rounded-md h-[500px] flex flex-col">
-      <h2 className="text-lg font-semibold mb-3">Chat With Admin</h2>
+    <div
+      className="bg-white rounded-2xl shadow-sm border h-[500px] flex flex-col"
+      style={{ borderColor: "#E4F0F5" }}
+    >
+      {/* HEADER */}
+      <div className="px-5 py-4 border-b" style={{ borderColor: "#E4F0F5" }}>
+        <h2 className="text-lg font-semibold" style={{ color: "#122C55" }}>
+          Chat With Admin
+        </h2>
+      </div>
 
-      <div className="flex-1 overflow-y-auto bg-slate-100 p-3 rounded-md">
+      {/* MESSAGES AREA */}
+      <div className="flex-1 overflow-y-auto px-5 py-4 space-y-3 bg-[#FCF6E3]/40">
         {messages.map((m, i) => (
           <div
             key={i}
             ref={scrollRef}
-            className={`flex ${m.senderRole === "customer" ? "justify-end" : "justify-start"} mb-2`}
+            className={`flex ${
+              m.senderRole === "customer" ? "justify-end" : "justify-start"
+            }`}
           >
             <div
-              className={`p-2 rounded-md text-white ${m.senderRole === "customer" ? "bg-cyan-500" : "bg-purple-500"}`}
+              className="max-w-[70%] px-4 py-2 rounded-2xl text-sm shadow-sm"
+              style={{
+                backgroundColor:
+                  m.senderRole === "customer" ? "#122C55" : "#E4F0F5",
+                color: m.senderRole === "customer" ? "#ffffff" : "#122C55",
+              }}
             >
               {m.message}
             </div>
@@ -291,19 +306,37 @@ const Chat = () => {
         ))}
       </div>
 
-      <div className="flex mt-3">
-        <input
-          value={text}
-          onChange={(e) => setText(e.target.value)}
-          placeholder="Type message..."
-          className="flex-1 border rounded-l-md p-2 outline-none"
-        />
-        <button
-          onClick={handleSend}
-          className="bg-blue-600 text-white px-4 rounded-r-md"
-        >
-          <IoSend />
-        </button>
+      {/* INPUT AREA */}
+      <div className="p-4 border-t" style={{ borderColor: "#E4F0F5" }}>
+        <div className="flex items-center gap-3">
+          <textarea
+            value={text}
+            onChange={(e) => setText(e.target.value)}
+            onKeyDown={(e) => {
+              if (e.key === "Enter" && !e.shiftKey) {
+                e.preventDefault();
+                handleSend();
+              }
+            }}
+            placeholder="Type your message..."
+            rows={1}
+            className="flex-1 px-4 py-2.5 rounded-xl border outline-none text-sm resize-none transition"
+            style={{
+              borderColor: "#E4F0F5",
+            }}
+          />
+
+          <button
+            onClick={handleSend}
+            className="h-11 w-11 flex items-center justify-center rounded-xl transition"
+            style={{
+              backgroundColor: "#F38E16",
+              color: "#ffffff",
+            }}
+          >
+            <IoSend size={18} />
+          </button>
+        </div>
       </div>
     </div>
   );
