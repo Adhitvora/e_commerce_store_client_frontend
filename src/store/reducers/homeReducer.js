@@ -174,7 +174,10 @@ export const homeReducer = createSlice({
         totalReview: 0,
         rating_review: [],
         reviews: [],
-        banners: []
+        banners: [],
+        productsLoading: false,
+        productLoading: false,
+        reviewsLoading: false
     },
     reducers: {
         messageClear: (state, _) => {
@@ -183,6 +186,9 @@ export const homeReducer = createSlice({
         }
     },
     extraReducers: {
+        [get_products.pending]: (state, _) => {
+            state.productsLoading = true
+        },
         [get_category.fulfilled]: (state, {
             payload
         }) => {
@@ -191,17 +197,28 @@ export const homeReducer = createSlice({
         [get_products.fulfilled]: (state, {
             payload
         }) => {
+            state.productsLoading = false
             state.products = payload.products
             state.latest_product = payload.latest_product
             state.topRated_product = payload.topRated_product
             state.discount_product = payload.discount_product
         },
+        [get_products.rejected]: (state, _) => {
+            state.productsLoading = false
+        },
+        [get_product.pending]: (state, _) => {
+            state.productLoading = true
+        },
         [get_product.fulfilled]: (state, {
             payload
         }) => {
+            state.productLoading = false
             state.product = payload.product
             state.relatedProducts = payload.relatedProducts
             state.moreProducts = payload.moreProducts
+        },
+        [get_product.rejected]: (state, _) => {
+            state.productLoading = false
         },
         [price_range_product.fulfilled]: (state, {
             payload
@@ -221,12 +238,19 @@ export const homeReducer = createSlice({
         }) => {
             state.successMessage = payload.message
         },
+        [get_reviews.pending]: (state, _) => {
+            state.reviewsLoading = true
+        },
         [get_reviews.fulfilled]: (state, {
             payload
         }) => {
+            state.reviewsLoading = false
             state.reviews = payload.reviews
             state.totalReview = payload.totalReview
             state.rating_review = payload.rating_review
+        },
+        [get_reviews.rejected]: (state, _) => {
+            state.reviewsLoading = false
         },
         [get_banners.fulfilled]: (state, {
             payload

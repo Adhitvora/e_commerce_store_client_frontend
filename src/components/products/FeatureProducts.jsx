@@ -5,6 +5,7 @@ import { useDispatch, useSelector } from "react-redux";
 import { useNavigate } from "react-router-dom";
 import toast from "react-hot-toast";
 import Ratings from "../Ratings";
+import ProductCardSkeleton from "../skeletons/ProductCardSkeleton";
 import {
   add_to_card,
   get_wishlist_products,
@@ -12,7 +13,7 @@ import {
   add_to_wishlist,
 } from "../../store/reducers/cardReducer";
 
-const FeatureProducts = ({ products }) => {
+const FeatureProducts = ({ products, loading = false }) => {
   const navigate = useNavigate();
   const dispatch = useDispatch();
 
@@ -95,7 +96,12 @@ const FeatureProducts = ({ products }) => {
       </div>
 
       <div className="grid grid-cols-4 gap-6 md-lg:grid-cols-3 md:grid-cols-2 sm:grid-cols-1">
-        {products.map((p, i) => {
+        {loading &&
+          Array.from({ length: 8 }).map((_, index) => (
+            <ProductCardSkeleton key={index} />
+          ))}
+
+        {!loading && products.map((p, i) => {
           const discount = Number(p.discount) || 0;
           const discountedPrice =
             discount > 0
@@ -123,6 +129,7 @@ const FeatureProducts = ({ products }) => {
               <div className="relative">
                 <div className="h-[330px] overflow-hidden bg-[#f7ede6] sm:h-[290px]">
                   <img
+                    loading="lazy"
                     className="h-full w-full object-cover object-top transition-transform duration-500 group-hover:scale-105"
                     src={p.images[0]}
                     alt={p.name}
@@ -245,7 +252,7 @@ const FeatureProducts = ({ products }) => {
                       e.stopPropagation();
                       add_card(p._id);
                     }}
-                    className="flex h-[40px] w-full items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-[#1d4ed8] via-[#d946ef] to-[#f97316] px-3 text-sm font-semibold text-white transition-transform duration-300 hover:scale-[1.01]"
+                    className="flex h-[40px] w-full items-center justify-center gap-2 rounded-xl bg-[#0f1c2e] px-3 text-sm font-semibold text-white transition-colors duration-300 hover:bg-[#ff7a1a]"
                   >
                     <AiOutlineShoppingCart size={16} />
                     <span>Add to Cart</span>

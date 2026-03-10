@@ -4,7 +4,25 @@ import "react-multi-carousel/lib/styles.css";
 import { FiChevronLeft, FiChevronRight } from "react-icons/fi";
 import { Link } from "react-router-dom";
 
-const Products = ({ title, products }) => {
+const CollectionSkeleton = () => (
+  <div className="flex flex-col gap-3">
+    {Array.from({ length: 3 }).map((_, index) => (
+      <div
+        key={index}
+        className="grid grid-cols-[96px_minmax(0,1fr)] items-center gap-3 rounded-xl border border-[var(--mh-border)] bg-white p-3"
+      >
+        <div className="skeleton h-[96px] rounded-xl" />
+        <div className="space-y-3">
+          <div className="skeleton h-4 w-full rounded-full" />
+          <div className="skeleton h-4 w-2/3 rounded-full" />
+          <div className="skeleton h-4 w-20 rounded-full" />
+        </div>
+      </div>
+    ))}
+  </div>
+);
+
+const Products = ({ title, products, loading = false }) => {
   const titleMeta = {
     "Latest Product": {
       chip: "Fresh Picks",
@@ -77,6 +95,12 @@ const Products = ({ title, products }) => {
 
   return (
     <div className="flex gap-4 flex-col-reverse rounded-2xl border border-[#f2dfd4] bg-gradient-to-b from-white to-[#fff9f4] p-4 sm:p-3 shadow-sm">
+      {loading ? (
+        <>
+          <ButtonGroup next={() => {}} previous={() => {}} />
+          <CollectionSkeleton />
+        </>
+      ) : (
       <Carousel
         autoPlay={false}
         infinite={false}
@@ -103,6 +127,7 @@ const Products = ({ title, products }) => {
                 >
                   <div className="w-[96px] h-[96px] sm:w-[80px] sm:h-[80px] rounded-xl overflow-hidden bg-gradient-to-b from-[#fffaf7] via-[#fff3ea] to-[#fffaf7] border border-[#f3e4da] flex-shrink-0">
                     <img
+                      loading="lazy"
                       className="w-full h-full object-contain p-2.5 group-hover:scale-105 transition-transform duration-300"
                       src={product.images[0]}
                       alt={product.name}
@@ -151,6 +176,7 @@ const Products = ({ title, products }) => {
           </div>
         ))}
       </Carousel>
+      )}
     </div>
   );
 };

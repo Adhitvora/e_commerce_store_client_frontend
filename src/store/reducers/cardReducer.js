@@ -213,7 +213,9 @@ export const cardReducer = createSlice({
         errorMessage: '',
         successMessage: '',
         shipping_fee: 0,
-        outofstock_products: []
+        outofstock_products: [],
+        cardLoading: false,
+        cartUpdating: false
     },
     reducers: {
         messageClear: (state, _) => {
@@ -226,20 +228,29 @@ export const cardReducer = createSlice({
         }
     },
     extraReducers: {
+        [add_to_card.pending]: (state, _) => {
+            state.cartUpdating = true
+        },
         [add_to_card.rejected]: (state, {
             payload
         }) => {
+            state.cartUpdating = false
             state.errorMessage = payload.error
         },
         [add_to_card.fulfilled]: (state, {
             payload
         }) => {
+            state.cartUpdating = false
             state.successMessage = payload.message
             state.card_product_count = state.card_product_count + 1
+        },
+        [get_card_products.pending]: (state, _) => {
+            state.cardLoading = true
         },
         [get_card_products.fulfilled]: (state, {
             payload
         }) => {
+            state.cardLoading = false
             state.card_products = payload.card_products
             state.price = payload.price
             state.card_product_count = payload.card_product_count
@@ -247,20 +258,53 @@ export const cardReducer = createSlice({
             state.outofstock_products = payload.outOfStockProduct
             state.buy_product_item = payload.buy_product_item
         },
+        [get_card_products.rejected]: (state, _) => {
+            state.cardLoading = false
+        },
+        [delete_card_product.pending]: (state, _) => {
+            state.cartUpdating = true
+        },
         [delete_card_product.fulfilled]: (state, {
             payload
         }) => {
+            state.cartUpdating = false
             state.successMessage = payload.message
+        },
+        [delete_card_product.rejected]: (state, {
+            payload
+        }) => {
+            state.cartUpdating = false
+            state.errorMessage = payload?.error || payload?.message || ''
+        },
+        [quantity_inc.pending]: (state, _) => {
+            state.cartUpdating = true
         },
         [quantity_inc.fulfilled]: (state, {
             payload
         }) => {
+            state.cartUpdating = false
             state.successMessage = payload.message
+        },
+        [quantity_inc.rejected]: (state, {
+            payload
+        }) => {
+            state.cartUpdating = false
+            state.errorMessage = payload?.error || payload?.message || ''
+        },
+        [quantity_dec.pending]: (state, _) => {
+            state.cartUpdating = true
         },
         [quantity_dec.fulfilled]: (state, {
             payload
         }) => {
+            state.cartUpdating = false
             state.successMessage = payload.message
+        },
+        [quantity_dec.rejected]: (state, {
+            payload
+        }) => {
+            state.cartUpdating = false
+            state.errorMessage = payload?.error || payload?.message || ''
         },
         [add_to_wishlist.rejected]: (state, {
             payload

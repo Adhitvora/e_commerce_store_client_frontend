@@ -19,9 +19,7 @@ const Shipping = () => {
   const items = Number(location.state?.items || 0);
 
   const [res, setRes] = useState(false);
-
-  const [paymentType, setPaymentType] = useState("online"); // 🔥 NEW
-
+  const [paymentType, setPaymentType] = useState("online");
   const [state, setState] = useState({
     name: "",
     address: "",
@@ -31,6 +29,16 @@ const Shipping = () => {
     city: "",
     area: "",
   });
+
+  const fields = [
+    { label: "Full Name", name: "name", placeholder: "Enter full name" },
+    { label: "Phone", name: "phone", placeholder: "Enter phone number" },
+    { label: "Address", name: "address", placeholder: "Street address" },
+    { label: "Post", name: "post", placeholder: "Post code" },
+    { label: "Province", name: "province", placeholder: "Enter province" },
+    { label: "City", name: "city", placeholder: "Enter city" },
+    { label: "Area", name: "area", placeholder: "Enter area", full: true },
+  ];
 
   const inputHandle = (e) => {
     setState({
@@ -125,154 +133,212 @@ const Shipping = () => {
   };
 
   return (
-    <div>
+    <div className="min-h-screen bg-[#F6F2EB]">
       <Headers />
 
-      <section className="bg-[#eeeeee] py-10">
-        <div className="max-w-[1440px] mx-auto px-10">
-          <div className="flex flex-wrap gap-6">
-            {/* LEFT SIDE */}
-            <div className="w-[65%] md:w-full flex flex-col gap-4">
-              {/* SHIPPING FORM */}
-              <div className="bg-white p-6 rounded shadow-sm">
+      <section className="py-6 md:py-5">
+        <div className="mx-auto max-w-[1200px] px-6 md:px-4">
+          <div className="mb-6 flex flex-col gap-2">
+            <span className="inline-flex w-fit items-center rounded-full border border-[#ffd9c2] bg-[#fff7f1] px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.18em] text-[#FF7A1A]">
+              Secure Checkout
+            </span>
+            <h1 className="text-[28px] font-semibold text-[#0F1C2E] md:text-[24px]">
+              Complete your order
+            </h1>
+            <p className="text-sm text-slate-500">
+              Add shipping details, choose payment method, and review your order.
+            </p>
+          </div>
+
+          <div className="grid grid-cols-[minmax(0,1.86fr)_minmax(320px,1fr)] gap-6 md:grid-cols-1 md:gap-4">
+            <div className="space-y-6 md:space-y-4">
+              <div className="rounded-xl border border-[#E6E1DA] bg-white p-6 shadow-[0_2px_10px_rgba(0,0,0,0.05)] md:p-4">
                 {!res ? (
                   <>
-                    <h2 className="font-semibold text-lg mb-4">
-                      Shipping Information
-                    </h2>
+                    <div className="mb-5">
+                      <h2 className="text-[20px] font-semibold text-[#0F1C2E]">
+                        Shipping Information
+                      </h2>
+                      <p className="mt-1 text-sm text-slate-500">
+                        Enter the delivery address for this order.
+                      </p>
+                    </div>
 
-                    <form onSubmit={save} className="flex flex-col gap-4">
-                      <input
-                        name="name"
-                        onChange={inputHandle}
-                        placeholder="Full Name"
-                        className="border px-3 py-2 rounded"
-                      />
+                    <form onSubmit={save} className="space-y-5">
+                      <div className="grid grid-cols-2 gap-4 md:grid-cols-1 md:gap-3">
+                        {fields.map((field) => (
+                          <div
+                            key={field.name}
+                            className={field.full ? "col-span-2 md:col-span-1" : ""}
+                          >
+                            <label
+                              className="mb-2 block text-sm font-medium text-[#0F1C2E]"
+                              htmlFor={field.name}
+                            >
+                              {field.label}
+                            </label>
+                            <input
+                              id={field.name}
+                              name={field.name}
+                              onChange={inputHandle}
+                              placeholder={field.placeholder}
+                              value={state[field.name]}
+                              className="h-11 w-full rounded-lg border border-[#E6E1DA] px-3 text-sm text-slate-700 outline-none transition-colors placeholder:text-slate-400 focus:border-[#FF7A1A]"
+                            />
+                          </div>
+                        ))}
+                      </div>
 
-                      <input
-                        name="address"
-                        onChange={inputHandle}
-                        placeholder="Address"
-                        className="border px-3 py-2 rounded"
-                      />
-
-                      <input
-                        name="phone"
-                        onChange={inputHandle}
-                        placeholder="Phone"
-                        className="border px-3 py-2 rounded"
-                      />
-
-                      <input
-                        name="post"
-                        onChange={inputHandle}
-                        placeholder="Post"
-                        className="border px-3 py-2 rounded"
-                      />
-
-                      <input
-                        name="province"
-                        onChange={inputHandle}
-                        placeholder="Province"
-                        className="border px-3 py-2 rounded"
-                      />
-
-                      <input
-                        name="city"
-                        onChange={inputHandle}
-                        placeholder="City"
-                        className="border px-3 py-2 rounded"
-                      />
-
-                      <input
-                        name="area"
-                        onChange={inputHandle}
-                        placeholder="Area"
-                        className="border px-3 py-2 rounded"
-                      />
-
-                      <button className="bg-indigo-600 text-white py-2 rounded">
-                        Save
+                      <button
+                        className="h-11 w-full rounded-lg bg-[#FF7A1A] text-sm font-semibold text-white transition-colors hover:bg-[#e56f17]"
+                        type="submit"
+                      >
+                        Save Shipping Information
                       </button>
                     </form>
                   </>
                 ) : (
-                  <div>
-                    <h3 className="font-semibold">Deliver to {state.name}</h3>
-                    <p className="text-sm text-gray-600">
-                      {state.address}, {state.city}, {state.province}
-                    </p>
-                    <span
-                      onClick={() => setRes(false)}
-                      className="text-indigo-500 cursor-pointer text-sm"
-                    >
-                      Change
-                    </span>
+                  <div className="space-y-4">
+                    <div className="flex items-start justify-between gap-4 md:flex-col md:items-start">
+                      <div>
+                        <h2 className="text-[20px] font-semibold text-[#0F1C2E]">
+                          Shipping Information
+                        </h2>
+                        <p className="mt-1 text-sm text-slate-500">
+                          Delivery address confirmed for this order.
+                        </p>
+                      </div>
+                      <button
+                        className="text-sm font-medium text-[#FF7A1A] hover:text-[#e56f17]"
+                        onClick={() => setRes(false)}
+                        type="button"
+                      >
+                        Change
+                      </button>
+                    </div>
+
+                    <div className="rounded-lg border border-[#E6E1DA] bg-[#fffaf6] px-4 py-4">
+                      <h3 className="text-base font-semibold text-[#0F1C2E]">
+                        Deliver to {state.name}
+                      </h3>
+                      <p className="mt-2 text-sm leading-6 text-slate-600">
+                        {state.address}, {state.area}, {state.city}, {state.province},{" "}
+                        {state.post}
+                      </p>
+                      <p className="mt-1 text-sm text-slate-600">{state.phone}</p>
+                    </div>
                   </div>
                 )}
               </div>
 
-              {/* PAYMENT SELECTION 🔥 */}
-              <div className="bg-white p-6 rounded shadow-sm">
-                <h2 className="font-semibold text-lg mb-4">
-                  Select Payment Method
-                </h2>
+              <div className="rounded-xl border border-[#E6E1DA] bg-white p-6 shadow-[0_2px_10px_rgba(0,0,0,0.05)] md:p-4">
+                <div className="mb-5">
+                  <h2 className="text-[20px] font-semibold text-[#0F1C2E]">
+                    Select Payment Method
+                  </h2>
+                  <p className="mt-1 text-sm text-slate-500">
+                    Choose how you want to complete the payment.
+                  </p>
+                </div>
 
-                <div className="flex gap-6">
-                  <label className="flex gap-2 items-center cursor-pointer">
+                <div className="space-y-3">
+                  <label
+                    className={`flex cursor-pointer items-start gap-3 rounded-lg border px-4 py-3 transition-colors ${
+                      paymentType === "online"
+                        ? "border-[#FF7A1A] bg-[#fff8f2]"
+                        : "border-[#E6E1DA] bg-white hover:border-[#ffd2b3]"
+                    }`}
+                  >
                     <input
                       type="radio"
                       value="online"
                       checked={paymentType === "online"}
                       onChange={() => setPaymentType("online")}
+                      className="mt-1 accent-[#FF7A1A]"
                     />
-                    Online Payment (Razorpay)
+                    <span>
+                      <span className="block text-sm font-semibold text-[#0F1C2E]">
+                        Online Payment (Razorpay)
+                      </span>
+                      <span className="mt-1 block text-sm text-slate-500">
+                        Pay instantly using Razorpay.
+                      </span>
+                    </span>
                   </label>
 
-                  <label className="flex gap-2 items-center cursor-pointer">
+                  <label
+                    className={`flex cursor-pointer items-start gap-3 rounded-lg border px-4 py-3 transition-colors ${
+                      paymentType === "cod"
+                        ? "border-[#FF7A1A] bg-[#fff8f2]"
+                        : "border-[#E6E1DA] bg-white hover:border-[#ffd2b3]"
+                    }`}
+                  >
                     <input
                       type="radio"
                       value="cod"
                       checked={paymentType === "cod"}
                       onChange={() => setPaymentType("cod")}
+                      className="mt-1 accent-[#FF7A1A]"
                     />
-                    Cash On Delivery
+                    <span>
+                      <span className="block text-sm font-semibold text-[#0F1C2E]">
+                        Cash On Delivery
+                      </span>
+                      <span className="mt-1 block text-sm text-slate-500">
+                        Pay when your order arrives.
+                      </span>
+                    </span>
                   </label>
                 </div>
               </div>
             </div>
 
-            {/* RIGHT SIDE SUMMARY */}
-            <div className="w-[30%] md:w-full">
-              <div className="bg-white p-6 rounded shadow-sm flex flex-col gap-4">
-                <h2 className="font-semibold text-lg">Order Summary</h2>
-
-                <div className="flex justify-between">
-                  <span>Items</span>
-                  <span>₹{price}</span>
+            <aside className="md:order-last">
+              <div className="sticky top-[100px] rounded-xl border border-[#E6E1DA] bg-white p-5 shadow-[0_2px_10px_rgba(0,0,0,0.05)] md:static md:p-4">
+                <div className="mb-5">
+                  <h2 className="text-[20px] font-semibold text-[#0F1C2E]">
+                    Order Summary
+                  </h2>
+                  <p className="mt-1 text-sm text-slate-500">
+                    Review the final amount before placing the order.
+                  </p>
                 </div>
 
-                <div className="flex justify-between">
-                  <span>Shipping</span>
-                  <span>₹{shipping_fee}</span>
-                </div>
+                <div className="space-y-3 text-sm text-slate-600">
+                  <div className="flex items-center justify-between">
+                    <span>Items</span>
+                    <span>₹{price}</span>
+                  </div>
 
-                <div className="flex justify-between font-semibold">
-                  <span>Total</span>
-                  <span>₹{price + shipping_fee}</span>
+                  <div className="flex items-center justify-between">
+                    <span>Shipping</span>
+                    <span>₹{shipping_fee}</span>
+                  </div>
+
+                  <div className="border-t border-dashed border-[#E6E1DA] pt-3">
+                    <div className="flex items-center justify-between text-[18px] font-bold text-[#0F1C2E]">
+                      <span>Total</span>
+                      <span>₹{price + shipping_fee}</span>
+                    </div>
+                  </div>
                 </div>
 
                 <button
                   onClick={placeOrder}
                   disabled={!res}
-                  className={`py-2 rounded text-white ${
-                    res ? "bg-orange-500" : "bg-orange-300"
+                  className={`mt-4 h-[46px] w-full rounded-lg text-sm font-semibold text-white transition-colors ${
+                    res ? "bg-[#FF7A1A] hover:bg-[#e56f17]" : "bg-[#ffbb8a]"
                   }`}
                 >
                   Place Order
                 </button>
+
+                <p className="mt-3 text-xs leading-5 text-slate-400">
+                  Your payment flow and order logic remain unchanged. You can place
+                  the order after saving shipping information.
+                </p>
               </div>
-            </div>
+            </aside>
           </div>
         </div>
       </section>

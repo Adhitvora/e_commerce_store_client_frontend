@@ -6,13 +6,13 @@ import Categorys from '../components/Categorys'
 import FeatureProducts from '../components/products/FeatureProducts'
 import Products from '../components/products/Products'
 import Footer from '../components/Footer'
-import { get_category, get_products } from '../store/reducers/homeReducer'
+import { get_products } from '../store/reducers/homeReducer'
 const Home = () => {
     const dispatch = useDispatch()
-    const {products, latest_product, topRated_product, discount_product } = useSelector(state => state.home)
+    const {products, latest_product, topRated_product, discount_product, productsLoading } = useSelector(state => state.home)
     useEffect(() => {
         dispatch(get_products())
-    }, [])
+    }, [dispatch])
     return (
         <div className='w-full'>
             <Heders />
@@ -21,7 +21,7 @@ const Home = () => {
                 <Categorys />
             </div>
             <div className='py-[45px] max-w-[1440px] mx-auto px-16 sm:px-5 md-lg:px-12 md:px-10'>
-                <FeatureProducts products={products} />
+                <FeatureProducts products={products} loading={productsLoading} />
             </div>
             <section className='py-12 bg-gradient-to-b from-[#fff9f4] to-white border-y border-[#f3e3d8]'>
                 <div className='max-w-[1440px] mx-auto px-16 sm:px-5 md-lg:px-12 md:px-10'>
@@ -41,13 +41,13 @@ const Home = () => {
 
                     <div className="grid w-full grid-cols-3 md-lg:grid-cols-2 md:grid-cols-1 gap-6">
                         <div className='overflow-hidden'>
-                            <Products title='Latest Product' products={latest_product} />
+                            <Products title='Latest Product' products={latest_product} loading={productsLoading} />
                         </div>
                         <div className='overflow-hidden'>
-                            <Products title='Top Rated Product' products={topRated_product} />
+                            <Products title='Top Rated Product' products={topRated_product} loading={productsLoading} />
                         </div>
                         <div className='overflow-hidden'>
-                            <Products title='Discount Product' products={discount_product} />
+                            <Products title='Discount Product' products={discount_product} loading={productsLoading} />
                         </div>
                     </div>
                 </div>

@@ -1,11 +1,11 @@
 import React, { useEffect } from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { MdOutlineKeyboardArrowRight } from "react-icons/md";
+import { useSelector, useDispatch } from "react-redux";
+import toast from "react-hot-toast";
 import Headers from "../components/Headers";
 import Footer from "../components/Footer";
-import toast from "react-hot-toast";
-import { useNavigate } from "react-router-dom";
-import { useSelector, useDispatch } from "react-redux";
+import CartUpdateSkeleton from "../components/skeletons/CartUpdateSkeleton";
 import {
   get_card_products,
   delete_card_product,
@@ -16,7 +16,7 @@ import {
 
 const Card = () => {
   const dispatch = useDispatch();
-  const navegate = useNavigate();
+  const navigate = useNavigate();
   const { userInfo } = useSelector((state) => state.auth);
   const {
     card_products,
@@ -25,23 +25,11 @@ const Card = () => {
     buy_product_item,
     shipping_fee,
     outofstock_products,
+    cardLoading,
+    cartUpdating,
   } = useSelector((state) => state.card);
   const userId = userInfo?.id;
 
-  const redirect = () => {
-    if (!userInfo) {
-      navegate("/login");
-      return;
-    }
-    navegate("/shipping", {
-      state: {
-        products: card_products,
-        price: price,
-        shipping_fee: shipping_fee,
-        items: buy_product_item,
-      },
-    });
-  };
   useEffect(() => {
     if (!userId) return;
     dispatch(get_card_products(userId));
@@ -55,267 +43,281 @@ const Card = () => {
         dispatch(get_card_products(userId));
       }
     }
-  }, [successMessage, dispatch, userId]);
+  }, [dispatch, successMessage, userId]);
 
-  const inc = (quantity, stock, card_id) => {
-    const temp = quantity + 1;
-    if (temp <= stock) {
-      dispatch(quantity_inc(card_id));
+  const redirect = () => {
+    if (!userInfo) {
+      navigate("/login");
+      return;
+    }
+
+    navigate("/shipping", {
+      state: {
+        products: card_products,
+        price,
+        shipping_fee,
+        items: buy_product_item,
+      },
+    });
+  };
+
+  const inc = (quantity, stock, cardId) => {
+    if (quantity + 1 <= stock) {
+      dispatch(quantity_inc(cardId));
     }
   };
 
-  const dec = (quantity, card_id) => {
-    const temp = quantity - 1;
-    if (temp !== 0) {
-      dispatch(quantity_dec(card_id));
+  const dec = (quantity, cardId) => {
+    if (quantity - 1 !== 0) {
+      dispatch(quantity_dec(cardId));
     }
   };
+
+  const hasItems = card_products.length > 0 || outofstock_products.length > 0;
+
   return (
-    <div>
+    <div className="min-h-screen bg-[var(--mh-bg)]">
       <Headers />
-      <div className="max-w-[1440px] mx-auto px-16 sm:px-5 md-lg:px-12 md:px-10">
+
+      <div className="mx-auto max-w-[1440px] px-16 pt-6 md-lg:px-10 md:px-6 sm:px-4">
         <section
+          className="relative mt-6 h-[220px] overflow-hidden rounded-[28px] bg-cover bg-left bg-no-repeat"
           style={{ backgroundImage: 'url("/images/banner/card.jpg")' }}
-          className=" h-[220px] mt-6 bg-cover bg-no-repeat relative bg-left"
         >
-          <div className="absolute left-0 top-0 w-full h-full bg-[#2422228a]">
-            <div className="w-full h-full mx-auto">
-              <div className="flex flex-col justify-center gap-1 items-center h-full w-full text-white">
-                <h2 className="text-3xl font-bold">My Haat</h2>
-                <div className="flex justify-center items-center gap-2 text-2xl w-full">
-                  <Link to="/">Home</Link>
-                  <span className="pt-2">
-                    <MdOutlineKeyboardArrowRight />
-                  </span>
-                  <span>Card</span>
-                </div>
+          <div className="absolute inset-0 bg-[rgba(15,28,46,0.72)]">
+            <div className="flex h-full flex-col items-center justify-center gap-3 px-4 text-white">
+              <h2 className="text-3xl font-bold">My Haat</h2>
+              <div className="flex items-center gap-2 text-lg">
+                <Link to="/">Home</Link>
+                <MdOutlineKeyboardArrowRight />
+                <span>Cart</span>
               </div>
             </div>
           </div>
         </section>
       </div>
-      <section className="">
-        <div className="max-w-[1440px] mx-auto px-16 sm:px-5 md-lg:px-12 md:px-10 py-16">
-          {card_products.length > 0 || outofstock_products.length > 0 ? (
-            <div className="flex flex-wrap">
-              <div className="w-[67%] md-lg:w-full">
-                <div className="pr-3 md-lg:pr-0">
-                  <div className="flex flex-col gap-3">
-                    {/* <div className='bg-white py-4'>
-                                            <h2 className='text-md text-green-500 text-xl font-semibold'>Store {card_products.length}</h2>
-                                        </div> */}
-                    {card_products.map((p, i) => (
-                      <div className="flex bg-white p-4 flex-col gap-2 border">
-                        <div className="flex justify-start items-center">
-                          <h2 className="text-md text-slate-600">
-                            {p.shopName}
-                          </h2>
-                        </div>
-                        {p.products.map((pt, i) => (
+
+      <section>
+        <div className="mx-auto max-w-[1440px] px-16 py-16 md-lg:px-10 md:px-6 sm:px-4">
+          {cardLoading ? (
+            <CartUpdateSkeleton />
+          ) : hasItems ? (
+            <div className="grid grid-cols-12 gap-6 md-lg:grid-cols-1">
+              <div className="col-span-8 space-y-4 md-lg:col-span-1">
+                {cartUpdating && (
+                  <div className="mh-card p-4">
+                    <div className="skeleton h-4 w-44 rounded-full" />
+                  </div>
+                )}
+
+                {card_products.map((shop, index) => (
+                  <div key={index} className="mh-card p-5">
+                    <div className="mb-4 flex items-center justify-between gap-3 border-b border-[var(--mh-border)] pb-4">
+                      <div>
+                        <p className="text-xs font-semibold uppercase tracking-[0.18em] text-slate-400">
+                          Seller
+                        </p>
+                        <h3 className="mt-1 text-lg font-bold text-[var(--mh-ink)]">
+                          {shop.shopName}
+                        </h3>
+                      </div>
+                    </div>
+
+                    <div className="space-y-4">
+                      {shop.products.map((item) => {
+                        const finalPrice =
+                          item.productInfo.price -
+                          Math.floor(
+                            (item.productInfo.price * item.productInfo.discount) / 100,
+                          );
+
+                        return (
                           <div
-                            className={`w-full flex flex-wrap  ${i !== p.products.length - 1 ? "border-b pb-3" : ""} `}
+                            key={item._id}
+                            className="grid grid-cols-[96px_minmax(0,1fr)_160px] gap-4 rounded-[24px] border border-[var(--mh-border)] bg-[#fffdfb] p-4 sm:grid-cols-1"
                           >
-                            <div className="flex sm:w-full gap-2 w-7/12">
-                              <div className="flex gap-2 justify-start items-center">
-                                <img
-                                  className="w-[80px] h-[80px]"
-                                  src={pt.productInfo.images[0]}
-                                  alt="product image"
-                                />
-                                <div className="pr-4 text-slate-600">
-                                  <h2 className="text-md">
-                                    {pt.productInfo.name}
-                                  </h2>
-                                  <span className="text-sm">
-                                    Brand : {pt.productInfo.brand}
-                                  </span>
-                                </div>
+                            <img
+                              alt={item.productInfo.name}
+                              className="h-24 w-24 rounded-2xl object-cover"
+                              loading="lazy"
+                              src={item.productInfo.images[0]}
+                            />
+
+                            <div className="min-w-0">
+                              <h4 className="text-base font-semibold text-[var(--mh-ink)]">
+                                {item.productInfo.name}
+                              </h4>
+                              <p className="mt-1 text-sm text-slate-500">
+                                Brand: {item.productInfo.brand || "MyHaat"}
+                              </p>
+                              <div className="mt-3 flex flex-wrap items-end gap-3">
+                                <span className="text-xl font-bold text-[var(--mh-primary)]">
+                                  ₹{finalPrice}
+                                </span>
+                                <span className="text-sm text-slate-400 line-through">
+                                  ₹{item.productInfo.price}
+                                </span>
+                                <span className="rounded-full bg-[#fff1e8] px-2.5 py-1 text-xs font-semibold text-[#c95802]">
+                                  {item.productInfo.discount}% OFF
+                                </span>
                               </div>
                             </div>
-                            <div className="flex justify-between w-5/12 sm:w-full sm:mt-3">
-                              <div className="pl-4 sm:pl-0">
-                                <h2 className="text-lg text-orange-500">
-                                  $
-                                  {pt.productInfo.price -
-                                    Math.floor(
-                                      (pt.productInfo.price *
-                                        pt.productInfo.discount) /
-                                        100,
-                                    )}{" "}
-                                </h2>
-                                <p className="line-through">
-                                  ${pt.productInfo.price}
-                                </p>
-                                <p>-{pt.productInfo.discount}%</p>
-                              </div>
-                              <div className="flex gap-2 flex-col">
-                                <div className="flex bg-slate-200 h-[30px] justify-center items-center text-xl">
-                                  <div
-                                    onClick={() => dec(pt.quantity, pt._id)}
-                                    className="px-3 cursor-pointer"
-                                  >
-                                    -
-                                  </div>
-                                  <div className="px-3">{pt.quantity}</div>
-                                  <div
-                                    onClick={() =>
-                                      inc(
-                                        pt.quantity,
-                                        pt.productInfo.stock,
-                                        pt._id,
-                                      )
-                                    }
-                                    className="px-3 cursor-pointer"
-                                  >
-                                    +
-                                  </div>
-                                </div>
+
+                            <div className="flex flex-col items-end gap-3 sm:items-start">
+                              <div className="flex h-10 items-center rounded-2xl border border-[var(--mh-border)] bg-white px-3">
                                 <button
-                                  onClick={() =>
-                                    dispatch(delete_card_product(pt._id))
-                                  }
-                                  className="px-5 py-[3px] bg-red-500 text-white"
+                                  className="px-3 text-lg font-semibold text-slate-700 hover:text-[var(--mh-primary)]"
+                                  onClick={() => dec(item.quantity, item._id)}
+                                  type="button"
                                 >
-                                  Delete
+                                  -
+                                </button>
+                                <span className="min-w-[30px] text-center text-sm font-semibold text-[var(--mh-ink)]">
+                                  {item.quantity}
+                                </span>
+                                <button
+                                  className="px-3 text-lg font-semibold text-slate-700 hover:text-[var(--mh-primary)]"
+                                  onClick={() =>
+                                    inc(item.quantity, item.productInfo.stock, item._id)
+                                  }
+                                  type="button"
+                                >
+                                  +
                                 </button>
                               </div>
+                              <button
+                                className="rounded-xl bg-[#ef4444] px-4 py-2 text-sm font-semibold text-white hover:bg-[#dc2626] disabled:opacity-60"
+                                disabled={cartUpdating}
+                                onClick={() => dispatch(delete_card_product(item._id))}
+                                type="button"
+                              >
+                                Delete
+                              </button>
                             </div>
                           </div>
-                        ))}
-                      </div>
-                    ))}
-                    {outofstock_products.length > 0 && (
-                      <div className="flex flex-col gap-3">
-                        <div className="bg-white p-4">
-                          <h2 className="text-md text-red-500 font-semibold">
-                            Out of Stock {outofstock_products.length}
-                          </h2>
-                        </div>
-                        <div className="bg-white p-4">
-                          {outofstock_products.map((p, i) => (
-                            <div key={i} className="w-full flex flex-wrap">
-                              <div className="flex sm:w-full gap-2 w-7/12">
-                                <div className="flex gap-2 justify-start items-center">
-                                  <img
-                                    className="w-[80px] h-[80px]"
-                                    src={p.products[0].images[0]}
-                                    alt="product image"
-                                  />
-                                  <div className="pr-4 text-slate-600">
-                                    <h2 className="text-md">
-                                      {p.products[0].name}
-                                    </h2>
-                                    <span className="text-sm">
-                                      Brand : {p.products[0].brand}
-                                    </span>
-                                  </div>
-                                </div>
-                              </div>
-                              <div className="flex justify-between w-5/12 sm:w-full sm:mt-3">
-                                <div className="pl-4 sm:pl-0">
-                                  <h2 className="text-lg text-orange-500">
-                                    $
-                                    {p.products[0].price -
-                                      Math.floor(
-                                        (p.products[0].price *
-                                          p.products[0].discount) /
-                                          100,
-                                      )}{" "}
-                                  </h2>
-                                  <p className="line-through">
-                                    {p.products[0].price}
-                                  </p>
-                                  <p>-{p.products[0].discount}%</p>
-                                </div>
-                                <div className="flex gap-2 flex-col">
-                                  <div className="flex bg-slate-200 h-[30px] justify-center items-center text-xl">
-                                    <div
-                                      onClick={() => dec(p.quantity, p._id)}
-                                      className="px-3 cursor-pointer"
-                                    >
-                                      -
-                                    </div>
-                                    <div className="px-3">{p.quantity}</div>
-                                    <div
-                                      onClick={() =>
-                                        dec(
-                                          p.quantity,
-                                          p.products[0].stock,
-                                          p._id,
-                                        )
-                                      }
-                                      className="px-3 cursor-pointer"
-                                    >
-                                      +
-                                    </div>
-                                  </div>
-                                  <button
-                                    onClick={() =>
-                                      dispatch(delete_card_product(p._id))
-                                    }
-                                    className="px-5 py-[3px] bg-red-500 text-white"
-                                  >
-                                    Delete
-                                  </button>
-                                </div>
-                              </div>
-                            </div>
-                          ))}
-                        </div>
-                      </div>
-                    )}
+                        );
+                      })}
+                    </div>
                   </div>
-                </div>
+                ))}
+
+                {!!outofstock_products.length && (
+                  <div className="mh-card p-5">
+                    <div className="mb-4">
+                      <p className="text-xs font-semibold uppercase tracking-[0.18em] text-red-400">
+                        Attention
+                      </p>
+                      <h3 className="mt-1 text-lg font-bold text-red-500">
+                        Out of Stock {outofstock_products.length}
+                      </h3>
+                    </div>
+
+                    <div className="space-y-4">
+                      {outofstock_products.map((item) => {
+                        const product = item.products[0];
+                        const finalPrice =
+                          product.price - Math.floor((product.price * product.discount) / 100);
+
+                        return (
+                          <div
+                            key={item._id}
+                            className="grid grid-cols-[96px_minmax(0,1fr)_120px] gap-4 rounded-[24px] border border-[var(--mh-border)] bg-[#fffdfb] p-4 sm:grid-cols-1"
+                          >
+                            <img
+                              alt={product.name}
+                              className="h-24 w-24 rounded-2xl object-cover"
+                              loading="lazy"
+                              src={product.images[0]}
+                            />
+                            <div>
+                              <h4 className="text-base font-semibold text-[var(--mh-ink)]">
+                                {product.name}
+                              </h4>
+                              <p className="mt-1 text-sm text-slate-500">
+                                Brand: {product.brand || "MyHaat"}
+                              </p>
+                              <p className="mt-3 text-lg font-bold text-[var(--mh-primary)]">
+                                ₹{finalPrice}
+                              </p>
+                            </div>
+                            <button
+                              className="h-10 rounded-xl bg-[#ef4444] px-4 py-2 text-sm font-semibold text-white hover:bg-[#dc2626] disabled:opacity-60"
+                              disabled={cartUpdating}
+                              onClick={() => dispatch(delete_card_product(item._id))}
+                              type="button"
+                            >
+                              Delete
+                            </button>
+                          </div>
+                        );
+                      })}
+                    </div>
+                  </div>
+                )}
               </div>
-              <div className="w-[33%] md-lg:w-full">
-                <div className="pl-3 md-lg:pl-0 md-lg:mt-5">
+
+              <div className="col-span-4 md-lg:col-span-1">
+                <div className="sticky top-5 space-y-4 md-lg:static">
                   {card_products.length > 0 && (
-                    <div className="bg-white p-3 text-slate-600 flex flex-col gap-3 border">
-                      <h2 className="text-xl font-bold">Order Summary</h2>
-                      <div className="flex justify-between items-center">
-                        <span>{buy_product_item} Item</span>
-                        <span>₹{price}</span>
-                      </div>
-                      <div className="flex justify-between items-center">
-                        <span>Shipping Fee</span>
-                        <span>${shipping_fee}</span>
-                      </div>
-                      <div className="flex gap-2">
-                        <input
-                          className="w-full px-3 py-2 border border-slate-200 outline-0 focus:border-green-500 rounded-sm"
-                          type="text"
-                          placeholder="Input Vauchar Coupon"
-                        />
-                        <button className="px-5 py-[1px] bg-blue-500 text-white rounded-sm uppercase text-sm">
-                          Apply
+                    <div className="mh-card p-5 text-slate-600">
+                      <h2 className="text-xl font-bold text-[var(--mh-ink)]">
+                        Order Summary
+                      </h2>
+                      <div className="mt-5 space-y-3">
+                        <div className="flex items-center justify-between">
+                          <span>{buy_product_item} Item</span>
+                          <span>₹{price}</span>
+                        </div>
+                        <div className="flex items-center justify-between">
+                          <span>Shipping Fee</span>
+                          <span>₹{shipping_fee}</span>
+                        </div>
+                        <div className="flex gap-2">
+                          <input
+                            className="w-full rounded-xl border border-[var(--mh-border)] bg-[#fffdfb] px-3 py-2 outline-none focus:border-[#ffb17d]"
+                            placeholder="Enter voucher coupon"
+                            type="text"
+                          />
+                          <button className="rounded-xl bg-[#0f1c2e] px-4 py-2 text-sm font-semibold uppercase text-white hover:bg-[#162845]">
+                            Apply
+                          </button>
+                        </div>
+                        <div className="flex items-center justify-between border-t border-[var(--mh-border)] pt-3">
+                          <span>Total</span>
+                          <span className="text-lg font-bold text-[var(--mh-primary)]">
+                            ₹{price + shipping_fee}
+                          </span>
+                        </div>
+                        <button
+                          className="w-full rounded-2xl bg-[var(--mh-primary)] px-5 py-3 text-sm font-semibold uppercase text-white hover:bg-[var(--mh-primary-dark)] disabled:opacity-60"
+                          disabled={cartUpdating}
+                          onClick={redirect}
+                          type="button"
+                        >
+                          Proceed to checkout {buy_product_item}
                         </button>
                       </div>
-                      <div className="flex justify-between items-center">
-                        <span>Total</span>
-                        <span className="text-lg text-orange-500">
-                          ₹{price + shipping_fee}
-                        </span>
-                      </div>
-                      <button
-                        onClick={redirect}
-                        className="px-5 py-[6px] rounded-sm hover:shadow-orange-500/20 hover:shadow-lg bg-orange-500 text-sm text-white uppercase"
-                      >
-                        Proceed to checkout {buy_product_item}
-                      </button>
                     </div>
                   )}
                 </div>
               </div>
             </div>
           ) : (
-            <div>
-              <Link className="px-4 py-1 bg-indigo-500 text-white" to="/shops">
+            <div className="mh-card p-8 text-center">
+              <p className="text-base text-slate-600">
+                Your cart is empty. Explore the marketplace and add your next pick.
+              </p>
+              <Link
+                className="mt-4 inline-flex rounded-2xl bg-[var(--mh-primary)] px-5 py-3 text-sm font-semibold text-white hover:bg-[var(--mh-primary-dark)]"
+                to="/shops"
+              >
                 Shop Now
               </Link>
             </div>
           )}
         </div>
       </section>
+
       <Footer />
     </div>
   );
